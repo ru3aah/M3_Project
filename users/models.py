@@ -5,7 +5,7 @@ from django.contrib.auth.models import AbstractUser
 # Create your models here.
 class User(AbstractUser):
     USERNAME_FIELD = "email"
-    REQUIRED_FIELDS = ["username", "first_name", "last_name"]
+    REQUIRED_FIELDS = ["username"]
 
     image = models.ImageField(
         upload_to="profile_images/",
@@ -17,6 +17,10 @@ class User(AbstractUser):
     phone = models.CharField(max_length=15, null=True, blank=True)
 
     email = models.EmailField(unique=True)
+
+    class Meta:
+        verbose_name = "User"
+        verbose_name_plural = "Users"
 
     def __str__(self):
         return self.email

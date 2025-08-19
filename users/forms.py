@@ -4,7 +4,7 @@ from django.contrib.auth.forms import UserCreationForm
 from users.models import User
 
 
-class UserCreateForm(UserCreationForm):
+class UserRegistrationForm(UserCreationForm):
     class Meta(UserCreationForm.Meta):
         model = User
         fields = (
@@ -12,8 +12,7 @@ class UserCreateForm(UserCreationForm):
             "email",
             "first_name",
             "last_name",
-            "<PASSWORD>",
-            "<PASSWORD>",
+            "password",
         )
 
         def clean_email(self):
