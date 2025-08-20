@@ -1,4 +1,6 @@
+from django.contrib.auth import get_user_model
 from django.db import models
+from django.core.validators import MaxValueValidator, MinValueValidator
 
 
 class JournalizedModel(models.Model):
@@ -45,3 +47,18 @@ class Product(JournalizedModel):
 
     def get_absolute_url(self):
         return f"/products/{self.slug}/"
+
+
+class ProductReview(JournalizedModel):
+    product = models.ForeignKey(
+        Product, on_delete=models.CASCADE, related_name="reviews"
+    )
+    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
+    rating = models.PositiveSmallIntegerField(
+        default=1, validators=[MinValueValidator(1), MaxValueValidator(5)]
+    )
+    comment = models.TextField(max_length=1000)
+
+    class Meta:
+        verbose_name = "Product Review"
+        verbose_name_plural = "Product Reviews"
