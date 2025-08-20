@@ -1,6 +1,7 @@
 from django.contrib.auth.views import LoginView
 from django.urls import path
 from users import views
+from users.forms import UserLoginForm
 
 app_name = "users"
 
@@ -10,7 +11,7 @@ urlpatterns = [
         "login/",
         LoginView.as_view(
             template_name="users/login.html",
-            authentication_form=views.UserLoginForm,
+            authentication_form=UserLoginForm,
             redirect_authenticated_user=True,
             success_url="/",
         ),
