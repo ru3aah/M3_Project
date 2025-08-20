@@ -17,4 +17,5 @@ urlpatterns = [
         ),
         name="login",
     ),
+    path("account/", views.UserAccountView.as_view(), name="account"),
 ]
