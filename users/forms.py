@@ -1,5 +1,5 @@
 from django import forms
-from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 
 from users.models import User
 
@@ -70,3 +70,22 @@ class UserRegistrationForm(UserCreationForm):
         if User.objects.filter(email=email).exists():
             raise forms.ValidationError("Email already exists")
         return email
+
+
+class UserLoginForm(AuthenticationForm):
+    username = forms.EmailField(
+        widget=forms.EmailInput(
+            attrs={
+                "placeholder": "Your e-mail",
+                "class": "Input",
+            }
+        )
+    )
+    password = forms.CharField(
+        widget=forms.PasswordInput(
+            attrs={
+                "placeholder": "Your password",
+                "class": "Input",
+            }
+        )
+    )

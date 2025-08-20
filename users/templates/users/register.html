@@ -1,10 +1,8 @@
 {% extends 'users/base.html' %}
-
 {% load static %}
-
 {% block title %}Register | Hop & Barley{% endblock %}
-
 {% block content %}
+
 <main class="auth-page-wrapper">
     <div class="auth-background">
         <img src="{% static 'img/background/pattern.jpg' %}"
@@ -16,12 +14,13 @@
                 <h1 class="auth-title">Register</h1>
             </div>
 
-            <form class="auth-form" id="register-form" method="post">
+            <form class="auth-form" id="register-form" action="" method="post">
                 {% csrf_token %}
 
                 {% for field in form %}
                     <div class="InputField">
-                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        <label for="{{ field.id_for_label }}">
+                            {{ field.label }}</label>
                         {{ field }}
                         {% for error in field.errors %}
                             <div class="error-message">{{ error }}</div>
@@ -43,7 +42,8 @@
                 </div>
             </form>
 
-            <p class="auth-switch">Already have an account? <a href="../../../templates/login.html">Sign in</a></p>
+            <p class="auth-switch">Already have an account?
+                <a href="{% url 'users:login' %}">Sign in</a></p>
         </div>
     </div>
     <div class="auth-background">
