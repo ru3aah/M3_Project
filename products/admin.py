@@ -43,6 +43,29 @@ class ProductAdmin(admin.ModelAdmin):
 
 
 class CategoryAdmin(admin.ModelAdmin):
+    """
+    Represents the administrative interface for managing Category objects.
+
+    This class customizes the display and behavior of the Category model within
+    the Django admin site. It defines how fields are displayed, searchable,
+    and filtered in the admin interface. The class is used to provide a
+    more user-friendly and efficient way to manage Category data.
+
+    :ivar list_display: Specifies the fields displayed in the admin list view.
+    :type list_display: tuple
+    :ivar list_display_links: Specifies which fields in the admin list view are clickable
+                              to edit the corresponding record.
+    :type list_display_links: tuple
+    :ivar prepopulated_fields: Specifies fields that will be automatically populated
+                               based on the values of other fields.
+    :type prepopulated_fields: dict
+    :ivar search_fields: Specifies the fields that can be searched within the admin
+                         interface.
+    :type search_fields: tuple
+    :ivar list_filter: Specifies the fields used to filter results in the admin list view.
+    :type list_filter: tuple
+    """
+
     list_display = ("name", "slug", "parent")
     list_display_links = ("name", "parent")
 
