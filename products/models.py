@@ -1,6 +1,8 @@
 from django.contrib.auth import get_user_model
 from django.db import models
 from django.core.validators import MaxValueValidator, MinValueValidator
+from django.utils.text import slugify
+from django.urls import reverse
 
 
 class JournalizedModel(models.Model):
@@ -31,11 +33,13 @@ class Category(JournalizedModel):
 class Product(JournalizedModel):
     name = models.CharField(max_length=100)
     slug = models.SlugField(max_length=100, unique=True)
+    category = models.ForeignKey(Category, on_delete=models.CASCADE)
     description = models.TextField(max_length=1000)
     price = models.DecimalField(max_digits=10, decimal_places=2)
-    image = models.ImageField(upload_to="product_images/", null=True, blank=True)
-    category = models.ForeignKey(Category, on_delete=models.CASCADE)
+    currency = models.CharField(max_length=3, default="USD", null=True, blank=True)
     stock = models.PositiveIntegerField()
+    unit_measure = models.TextField(max_length=5, null=True, blank=True, default="kg")
+    image = models.ImageField(upload_to="product_images/", null=True, blank=True)
     available = models.BooleanField(default=True)
 
     class Meta:
@@ -46,7 +50,11 @@ class Product(JournalizedModel):
         return self.name
 
     def get_absolute_url(self):
-        return f"/products/{self.slug}/"
+        return reverse("products:product-detail", kwargs={"slug": self.slug})
+
+    def save(self, *args, **kwargs):
+        self.slug = slugify(self.name)
+        super().save(*args, **kwargs)
 
 
 class ProductReview(JournalizedModel):

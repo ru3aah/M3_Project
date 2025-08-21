@@ -1,0 +1,122 @@
+{% extends 'users/base.html' %}
+
+{% load static %}
+{% block title %}{{ product.name}} | Hop & Barley{% endblock %}
+
+{% block content %}
+    <!-- Main Content -->
+    <main class="page-product">
+    <div class="container">
+        <!-- Product Info Section -->
+        <section class="product-details-section">
+            <div class="product-image-container">
+                {% if product.image %}
+                    <img src="{{ product.image.url }}"
+                         alt="{{ product.name }}"
+                         class="product-image">
+                {% else %}
+                    <<img src="{% static 'img/products/default-product.jpg' %}"
+                         alt="{{ product.name }}"
+                         class="product-image">
+                {% endif %}
+            </div>
+            <div class="product-info-column">
+                <div class="product-title-price">
+                    <h1 class="product-name">{{ product.name }}</h1>
+                    <div class="price-section">
+                        <span class="price-tag">per
+                            {{ product.unit_measure }}</span>
+                        <p class="product-price">{{ product.currency }}
+                            {{ product.price }}</p>
+                    </div>
+                </div>
+                <div class="product-description">
+                    <p>{{ product.description }}</p>
+                </div>
+                <div class="cart-controls">
+                    <button class="button button--primary add-to-cart-button" id="add-to-cart-btn">
+                        <i class="fa-solid fa-cart-shopping"></i>
+                        <span>Add to Cart</span>
+                    </button>
+                    <div class="quantity-counter is-hidden" id="quantity-counter">
+                        <button class="quantity-btn" data-action="decrease" aria-label="Decrease quantity"><i class="fa-solid fa-minus"></i></button>
+                        <span class="quantity-value">1 in cart</span>
+                        <button class="quantity-btn" data-action="increase" aria-label="Increase quantity"><i class="fa-solid fa-plus"></i></button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Technical Specifications Accordion -->
+        <section class="accordion-section">
+            <div class="accordion-item">
+                <div class="accordion-title">
+                    <h3>Technical Specifications</h3>
+                    <i class="fa-solid fa-chevron-down accordion-icon"></i>
+                </div>
+                <div class="accordion-content">
+                    <ul>
+                        <li><strong>Origin:</strong> United Kingdom</li>
+                        <li><strong>Type:</strong> Base Malt</li>
+                        <li><strong>Color (°L):</strong> 2.5 - 4.0 °L</li>
+                        <li><strong>Moisture:</strong> 4.0% max</li>
+                        <li><strong>Protein:</strong> 9.5% - 10.5%</li>
+                        <li><strong>Diastatic Power:</strong> ≈ 120 °L</li>
+                        <li><strong>Usage:</strong> Up to 100% of the grist</li>
+                        <li><strong>Recommended Beer Styles:</strong> English Pale Ale, ESB, Bitter, Porter, Stout, Mild Ale</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Latest Reviews Section -->
+        <section class="reviews-section">
+            <h2 class="reviews-title">Latest reviews</h2>
+            <div class="reviews-grid">
+                <!-- Review Card 1 -->
+                <div class="review-card">
+                    <div class="review-rating">
+                        <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+                    </div>
+                    <div class="review-body">
+                        <h4 class="review-heading">The Gold Standard!</h4>
+                        <p class="review-text">Unbeatable flavor for my bitters. If you want to brew a real British ale, you have to start with this malt. Fantastic efficiency and a wonderful aroma during the mash. 10/10.</p>
+                    </div>
+                    <div class="review-author">
+                        <img src="../static/img/avatars/avatar2.svg" alt="User avatar" class="author-avatar">
+                        <span class="author-name">UKAleMaster</span>
+                    </div>
+                </div>
+                <!-- Review Card 2 -->
+                <div class="review-card">
+                    <div class="review-rating">
+                        <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+                    </div>
+                    <div class="review-body">
+                        <h4 class="review-heading">Incredibly Reliable and Flavorful</h4>
+                        <p class="review-text">I've been using this malt for years. It always crushes perfectly, gives predictable results, and lends a depth to the beer that you just can't find in other base malts. Perfect for porters.</p>
+                    </div>
+                    <div class="review-author">
+                        <img src="../static/img/avatars/avatar3.svg" alt="User avatar" class="author-avatar">
+                        <span class="author-name">MashAndSparge</span>
+                    </div>
+                </div>
+                <!-- Review Card 3 -->
+                <div class="review-card">
+                    <div class="review-rating">
+                        <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-regular fa-star"></i>
+                    </div>
+                    <div class="review-body">
+                        <h4 class="review-heading">Adds Great Complexity</h4>
+                        <p class="review-text">I usually use American 2-row, but decided to try Maris Otter for my pale ale. The difference is noticeable! It added pleasant biscuit notes. A bit more expensive, so 4 stars, but the flavor is a solid 5.</p>
+                    </div>
+                    <div class="review-author">
+                        <img src="../static/img/avatars/avatar4.svg" alt="User avatar" class="author-avatar">
+                        <span class="author-name">CraftyBrewer_USA</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+    </main>
+{% endblock %}
