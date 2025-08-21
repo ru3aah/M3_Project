@@ -73,48 +73,32 @@
         <section class="reviews-section">
             <h2 class="reviews-title">Latest reviews</h2>
             <div class="reviews-grid">
-                <!-- Review Card 1 -->
-                <div class="review-card">
-                    <div class="review-rating">
-                        <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+                {% for review in reviews %}
+                    <div class="review-card">
+                        <div class="review-rating">
+                            {% for i in '12345' %}
+                                {% if forloop.counter <= review.rating %}
+                                    <i class="fa-solid fa-star"></i>
+                                {% else %}
+                                    <i class="fa-regular fa-star"></i>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                        <div class="review-body">
+                            <h4 class="review-heading">{{ review.title }}</h4>
+                            <p class="review-text">{{ review.comment }}</p>
+                        </div>
+                        <div class="review-author">
+                            <img src="{{review.user.image.url}}" alt="User
+                            avatar"
+                                 class="author-avatar">
+                            <span class="author-name">
+                                {{ review.user.username }}</span>
+                        </div>
                     </div>
-                    <div class="review-body">
-                        <h4 class="review-heading">The Gold Standard!</h4>
-                        <p class="review-text">Unbeatable flavor for my bitters. If you want to brew a real British ale, you have to start with this malt. Fantastic efficiency and a wonderful aroma during the mash. 10/10.</p>
-                    </div>
-                    <div class="review-author">
-                        <img src="../static/img/avatars/avatar2.svg" alt="User avatar" class="author-avatar">
-                        <span class="author-name">UKAleMaster</span>
-                    </div>
-                </div>
-                <!-- Review Card 2 -->
-                <div class="review-card">
-                    <div class="review-rating">
-                        <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
-                    </div>
-                    <div class="review-body">
-                        <h4 class="review-heading">Incredibly Reliable and Flavorful</h4>
-                        <p class="review-text">I've been using this malt for years. It always crushes perfectly, gives predictable results, and lends a depth to the beer that you just can't find in other base malts. Perfect for porters.</p>
-                    </div>
-                    <div class="review-author">
-                        <img src="../static/img/avatars/avatar3.svg" alt="User avatar" class="author-avatar">
-                        <span class="author-name">MashAndSparge</span>
-                    </div>
-                </div>
-                <!-- Review Card 3 -->
-                <div class="review-card">
-                    <div class="review-rating">
-                        <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-regular fa-star"></i>
-                    </div>
-                    <div class="review-body">
-                        <h4 class="review-heading">Adds Great Complexity</h4>
-                        <p class="review-text">I usually use American 2-row, but decided to try Maris Otter for my pale ale. The difference is noticeable! It added pleasant biscuit notes. A bit more expensive, so 4 stars, but the flavor is a solid 5.</p>
-                    </div>
-                    <div class="review-author">
-                        <img src="../static/img/avatars/avatar4.svg" alt="User avatar" class="author-avatar">
-                        <span class="author-name">CraftyBrewer_USA</span>
-                    </div>
-                </div>
+                {% empty %}
+                    <p> No reviews yet</p>
+                {% endfor %}
             </div>
         </section>
     </div>

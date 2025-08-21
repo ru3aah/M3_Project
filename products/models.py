@@ -36,9 +36,9 @@ class Product(JournalizedModel):
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
     description = models.TextField(max_length=1000)
     price = models.DecimalField(max_digits=10, decimal_places=2)
-    currency = models.CharField(max_length=3, default="USD", null=True, blank=True)
+    currency = models.CharField(max_length=3, default="USD")
     stock = models.PositiveIntegerField()
-    unit_measure = models.TextField(max_length=5, null=True, blank=True, default="kg")
+    unit_measure = models.TextField(max_length=5, default="kg")
     image = models.ImageField(upload_to="product_images/", null=True, blank=True)
     available = models.BooleanField(default=True)
 
@@ -65,6 +65,7 @@ class ProductReview(JournalizedModel):
     rating = models.PositiveSmallIntegerField(
         default=1, validators=[MinValueValidator(1), MaxValueValidator(5)]
     )
+    title = models.TextField(max_length=50, blank=True, null=True)
     comment = models.TextField(max_length=1000)
 
     class Meta:
