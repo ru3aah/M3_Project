@@ -36,6 +36,42 @@ class Category(JournalizedModel):
 
 
 class Product(JournalizedModel):
+    """
+    Represents a product in the inventory system.
+
+    This class is used to define the structure and behavior of a product entity
+    in the inventory management context. It includes fields such as name, price,
+    category, and stock, among others, and provides essential methods like string
+    representation, URL generation, and slug generation upon saving.
+
+    :ivar name: The name of the product.
+    :type name: str
+    :ivar slug: A unique slug identifier for the product.
+    :type slug: str
+    :ivar category: The category associated with the product.
+    :type category: Category
+    :ivar description: A detailed description of the product with a maximum of
+        1000 characters.
+        >>The first sentence of the description to be less than 30 chars and
+        would be used as a short description for product card in the List
+        View being truncated by final comma.
+        >>Otherwise first 30 chars would be used with no regards to comma split.
+    :type description: str
+    :ivar price: The price of the product, encompassing up to 10 digits with
+        2 decimal places.
+    :type price: decimal.Decimal
+    :ivar currency: The currency code for the product price (ISO 4217 format).
+    :type currency: str
+    :ivar stock: The quantity of the product currently available in stock.
+    :type stock: int
+    :ivar unit_measure: The unit of measure for the product, defaulting to "kg".
+    :type unit_measure: str
+    :ivar image: An optional image associated with the product.
+    :type image: models.ImageField
+    :ivar available: Indicates whether the product is available (defaults to True).
+    :type available: bool
+    """
+
     name = models.CharField(max_length=100)
     slug = models.SlugField(max_length=100, unique=True)
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
