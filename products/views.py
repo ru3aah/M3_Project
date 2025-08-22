@@ -1,4 +1,4 @@
-from django.views.generic import DetailView, ListView
+from django.views.generic import DetailView, ListView, TemplateView
 
 from products.models import Product, ProductReview, Category
 from django.db import models
@@ -54,5 +54,8 @@ class ProductListView(ListView):
         context = super().get_context_data(**kwargs)
         context["categories"] = Category.objects.all()
         context["products"] = self.get_queryset()
-
         return context
+
+
+class GuidesRecipesView(TemplateView):
+    template_name = "guides-recipes.html"
