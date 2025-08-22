@@ -1,6 +1,6 @@
-from django.views.generic import DetailView
+from django.views.generic import DetailView, ListView
 
-from products.models import Product, ProductReview
+from products.models import Product, ProductReview, Category
 from django.db import models
 
 
@@ -17,7 +17,7 @@ class ProductDetailView(DetailView):
     :ivar model: The model associated with this DetailView.
     :type model: Product
     :ivar queryset: Queryset to fetch the product instance along with
-        related category and prefetch recent reviews.
+         a related category and prefetch recent reviews.
     :type queryset: QuerySet
     :ivar template_name: Path to the template used for rendering the
         product details.
@@ -41,4 +41,17 @@ class ProductDetailView(DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["reviews"] = self.object.recent_reviews[:3]
+        return context
+
+
+class ProductListView(ListView):
+    model = Product
+    queryset = Product.objects.filter(available=True)
+
+    template_name = "products/home.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["categories"] = Category.objects.all()
+
         return context
