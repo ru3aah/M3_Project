@@ -42,6 +42,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // 3. Filter Logic (Keywords and Checkboxes)
         const keywordsList = document.querySelector('.keywords-list');
+
+        const filterButton = document.querySelector('.filter-button');
+        if (filterButton) {
+            filterButton.addEventListener('click', function()
+            {
+                keywordsList.classList.toggle('is-hidden');
+            });
+        }
+
+
         const checkboxes = document.querySelectorAll('.checkbox-group input[type="checkbox"]');
 
         if (keywordsList && checkboxes.length > 0) {
