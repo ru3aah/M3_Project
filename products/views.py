@@ -1,4 +1,5 @@
 from django.views.generic import DetailView, ListView, TemplateView
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 from products.models import Product, ProductReview, Category
 from django.db import models
@@ -47,14 +48,43 @@ class ProductDetailView(DetailView):
 class ProductListView(ListView):
     model = Product
     queryset = Product.objects.filter(available=True)
-
     template_name = "products/home.html"
+    paginate_by = 1
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["categories"] = Category.objects.all()
-        context["products"] = self.get_queryset()
+        # Remove the products line as page_obj already contains paginated products
         return context
+
+    def paginate_queryset(self, queryset, page_size):
+        """Override to handle pagination errors gracefully"""
+        paginator = self.get_paginator(
+            queryset,
+            page_size,
+            orphans=self.get_paginate_orphans(),
+            allow_empty_first_page=self.get_allow_empty(),
+        )
+
+        page_kwarg = self.page_kwarg
+        page = self.kwargs.get(page_kwarg) or self.request.GET.get(page_kwarg) or 1
+
+        try:
+            page_number = int(page)
+        except ValueError:
+            page_number = 1
+
+        # Ensure page number is at least 1
+        if page_number < 1:
+            page_number = 1
+
+        try:
+            page = paginator.page(page_number)
+            return (paginator, page, page.object_list, page.has_other_pages())
+        except (EmptyPage, PageNotAnInteger):
+            # If page is out of range or not an integer, deliver first page
+            page = paginator.page(1)
+            return (paginator, page, page.object_list, page.has_other_pages())
 
 
 class GuidesRecipesView(TemplateView):
