@@ -1,9 +1,11 @@
+from tokenize import endpats
 from unicodedata import category
 
 from django.db.models import Q
 from django.views.generic import DetailView, ListView, TemplateView
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
+from config.settings import PRODUCTS_QUERY_MAP
 from products.models import Product, ProductReview, Category
 from django.db import models
 
@@ -51,7 +53,7 @@ class ProductDetailView(DetailView):
 class ProductListView(ListView):
     model = Product
     template_name = "products/home.html"
-    paginate_by = 1
+    paginate_by = 3
     allow_empty = True
 
     def get_context_data(self, **kwargs):
@@ -74,6 +76,11 @@ class ProductListView(ListView):
         to_search = self.request.GET.get("q", None)
         if to_search:
             qs = qs.filter(Q(name__icontains=to_search))
+
+        # sort
+        qs_key = self.request.GET.get("sort", "new")
+        qs = qs.order_by(PRODUCTS_QUERY_MAP[qs_key])
+
         return qs
 
     def paginate_queryset(self, queryset, page_size):

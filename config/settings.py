@@ -93,3 +93,10 @@ SUCCESS_REDIRECT_URL = "/"
 LOGIN_URL = "/users/login/"
 LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "/users/login/"
+
+PRODUCTS_QUERY_MAP = {
+    "rating": "-rating",
+    "price_asc": "price",
+    "price_desc": "-price",
+    "new": "-created_at",
+}

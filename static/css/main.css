@@ -436,6 +436,25 @@ header {
     line-height: 1.4;
     color: var(--grey-text);
 }
+.product-card__rating {
+    font-size: 12px;
+    line-height: 1.4;
+    color: var(--grey-text);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.product-card__rating .fa-star {
+    color: #ffd700;
+    font-size: 12px;
+}
+
+.product-card__rating--no-rating {
+    color: var(--grey-text);
+    font-style: italic;
+}
+
 
 /* Pagination */
 .pagination {
