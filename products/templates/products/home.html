@@ -58,17 +58,20 @@
             </div>
 
             {% if page_obj.object_list %}
-    <!-- Existing product grid -->
-{% else %}
-    <div class="no-results">
-        <h3>No products found</h3>
-        {% if request.GET.q %}
-            <p>No products match your search for "{{ request.GET.q }}"</p>
-        {% else %}
-            <p>No products are currently available.</p>
-        {% endif %}
-    </div>
-{% endif %}
+            <!-- Existing product grid -->
+            {% else %}
+                <div class="no-results">
+                <h3>No products found</h3>
+                {% if request.GET.q %}
+                    <p>
+                        No products match your search for "{{ request.GET.q }}"
+                    </p>
+                {% else %}
+                        <p>No products are currently available.</p>
+                {% endif %}
+                </div>
+            {% endif %}
+
             <div class="product-grid">
                 <!-- Product Cards-->
                 {% for product in page_obj %}
@@ -96,7 +99,6 @@
                                 {% else %}
                                     <span class="product-card__rating--no-rating ">
                                         No rating yet</span>
-
                                 {% endif %}
                             </p>
                             <p class="product-card__description">
@@ -110,7 +112,7 @@
                 {% endfor %}
             </div>
 
-            <!-- Enhanced Pagination section -->
+            <!-- Pagination section -->
             {% if page_obj.paginator.num_pages > 1 %}
             <div class="pagination">
                 {% if page_obj.has_previous %}
@@ -120,7 +122,6 @@
                         <span>Previous</span>
                     </a>
                 {% endif %}
-
                 <div class="pagination-list">
                     {% if page_obj.paginator.num_pages <= 7 %}
                         <!-- Show all pages if there are 7 or fewer -->
@@ -197,7 +198,6 @@
                         {% endif %}
                     {% endif %}
                 </div>
-
                 {% if page_obj.has_next %}
                     <a href="?page={{ page_obj.next_page_number }}"
                        class="pagination__link pagination__link--next">
@@ -205,12 +205,9 @@
                         <i class="fa-solid fa-arrow-right"></i>
                     </a>
                 {% endif %}
-
             </div>
             {% endif %}
-
         </section>
     </div>
 </main>
-
 {% endblock %}

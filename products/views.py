@@ -53,7 +53,7 @@ class ProductDetailView(DetailView):
 class ProductListView(ListView):
     model = Product
     template_name = "products/home.html"
-    paginate_by = 3
+    paginate_by = 2
     allow_empty = True
 
     def get_context_data(self, **kwargs):

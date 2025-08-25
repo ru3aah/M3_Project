@@ -41,17 +41,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         // 2. Pagination Logic
-        const paginationList = document.querySelector('.pagination-list');
-        if (paginationList) {
-            const paginationLinks = paginationList.querySelectorAll('.pagination__link');
-            paginationLinks.forEach(link => {
-                link.addEventListener('click', function(event) {
-                    event.preventDefault();
-                    paginationLinks.forEach(lnk => lnk.classList.remove('active'));
-                    this.classList.add('active');
-                });
-            });
-        }
+
 
         // 3. Filter Logic (Keywords and Checkboxes)
         const keywordsList = document.querySelector('.keywords-list');
