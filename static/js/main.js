@@ -49,7 +49,7 @@ function removeFilter(categoryToRemove) {
             urlParams.delete('categories');
         }
         
-        // Reset to first page when removing filters
+        // Reset to the first page when removing filters
         urlParams.delete('page');
         
         const newUrl = `${window.location.pathname}?${urlParams.toString()}`;
@@ -180,7 +180,7 @@ function performSearch() {
         urlParams.delete('q');
     }
     
-    // Reset to first page when searching
+    // Reset to the first page when searching
     urlParams.delete('page');
     
     const newUrl = `${window.location.pathname}?${urlParams.toString()}`;
@@ -190,12 +190,12 @@ function performSearch() {
 // Sort button functionality
 document.querySelectorAll('.sort-button').forEach(button => {
     button.addEventListener('click', function() {
-        // Remove active class from all buttons
+        // Remove the active class from all buttons
         document.querySelectorAll('.sort-button').forEach(btn => {
             btn.classList.remove('active-sort');
         });
         
-        // Add active class to clicked button
+        // Add the active class to clicked button
         this.classList.add('active-sort');
         
         // Get current URL parameters
@@ -223,7 +223,7 @@ document.querySelectorAll('.sort-button').forEach(button => {
         
         urlParams.set('sort', sort);
         
-        // Reset to first page when sorting
+        // Reset to the first page when sorting
         urlParams.delete('page');
         
         const newUrl = `${window.location.pathname}?${urlParams.toString()}`;
@@ -287,7 +287,7 @@ if (filterButton) {
             searchParams.append('categories', selectedFilters.join(','));
         }
         
-        // Reset to first page when applying filters
+        // Reset to the first page when applying filters
         searchParams.delete('page');
         
         const newUrl = `${window.location.pathname}?${searchParams.toString()}`;
