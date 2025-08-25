@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% load static %}
+
+{%block title%}Community| Hop & Barley{% endblock%}
+
+{% block content %}
+
+<!-- Main Content -->
+<main class="auth-page-wrapper">
+    <div class="auth-background">
+        <img src="{% static 'img/background/pattern.jpg' %}"
+             alt="Background pattern">
+    </div>
+    <div class="auth-form-container">
+        <div class="auth-container--register">
+            <div class="Legend">
+                <h1 class="auth-title">Community</h1>
+            </div>
+            <div class="auth-form">
+                <div class="InputField">
+                    <p style="font-size: 24px; font-weight: 600; color: var(--green); background-color: var(--background-green); padding: 8px; border-radius: 8px; text-align: center;">Coming Soon!</p>
+                </div>
+                <div class="InputField">
+                    <p style="font-size: 16px;
+                    line-height: 1.4;
+                    color: var(--black-main);
+                    margin-bottom: 16px;">We are working hard to bring you the possibility to meet a homebrewing community.</p>
+                    <p style="font-size: 16px;
+                    line-height: 1.4;
+                    color: var(--black-main);">Stay tuned for updates!</p>
+                </div>
+                <div class="ButtonGroup">
+                    <a href="{% url 'products:product-list' %}"
+                       class="button button--primary">Back to Products</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+{% endblock %}

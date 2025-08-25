@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+
+{% load static %}
+{% block title %}{{ product.name}} | Hop & Barley{% endblock %}
+
+{% block content %}
+    <!-- Main Content -->
+    <main class="page-product">
+    <div class="container">
+        <!-- Product Info Section -->
+        <section class="product-details-section">
+            <div class="product-image-container">
+                {% if product.image %}
+                    <img src="{{ product.image.url }}"
+                         alt="{{ product.name }}"
+                         class="product-image">
+                {% else %}
+                    <<img src="{% static 'img/products/default-product.jpg' %}"
+                         alt="{{ product.name }}"
+                         class="product-image">
+                {% endif %}
+            </div>
+            <div class="product-info-column">
+                <div class="product-title-price">
+                    <h1 class="product-name">{{ product.name }}</h1>
+                    <div class="price-section">
+                        <span class="price-tag">per
+                            {{ product.unit_measure }}</span>
+                        <p class="product-price">{{ product.currency }}
+                            {{ product.price }}</p>
+                    </div>
+                </div>
+                <div class="product-description">
+                    <p>{{ product.description|linebreaks }}</p>
+                </div>
+                <div class="cart-controls">
+                    <button class="button button--primary add-to-cart-button" id="add-to-cart-btn">
+                        <i class="fa-solid fa-cart-shopping"></i>
+                        <span>Add to Cart</span>
+                    </button>
+                    <div class="quantity-counter is-hidden" id="quantity-counter">
+                        <button class="quantity-btn" data-action="decrease" aria-label="Decrease quantity"><i class="fa-solid fa-minus"></i></button>
+                        <span class="quantity-value">1 in cart</span>
+                        <button class="quantity-btn" data-action="increase" aria-label="Increase quantity"><i class="fa-solid fa-plus"></i></button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Technical Specifications Accordion -->
+        <section class="accordion-section">
+            <div class="accordion-item">
+                <div class="accordion-title">
+                    <h3>Technical Specifications</h3>
+                    <i class="fa-solid fa-chevron-down accordion-icon"></i>
+                </div>
+                <div class="accordion-content">
+                    <ul>
+                        <li><strong>Origin:</strong> United Kingdom</li>
+                        <li><strong>Type:</strong> Base Malt</li>
+                        <li><strong>Color (°L):</strong> 2.5 - 4.0 °L</li>
+                        <li><strong>Moisture:</strong> 4.0% max</li>
+                        <li><strong>Protein:</strong> 9.5% - 10.5%</li>
+                        <li><strong>Diastatic Power:</strong> ≈ 120 °L</li>
+                        <li><strong>Usage:</strong> Up to 100% of the grist</li>
+                        <li><strong>Recommended Beer Styles:</strong> English Pale Ale, ESB, Bitter, Porter, Stout, Mild Ale</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Latest Reviews Section -->
+        <section class="reviews-section">
+            <h2 class="reviews-title">Latest reviews</h2>
+            <div class="reviews-grid">
+                {% for review in reviews %}
+                    <div class="review-card">
+                        <div class="review-rating">
+                            {% for i in '12345' %}
+                                {% if forloop.counter <= review.rating %}
+                                    <i class="fa-solid fa-star"></i>
+                                {% else %}
+                                    <i class="fa-regular fa-star"></i>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                        <div class="review-body">
+                            <h4 class="review-heading">{{ review.title }}</h4>
+                            <p class="review-text">{{ review.comment }}</p>
+                        </div>
+                        <div class="review-author">
+                            <img src="{{review.user.image.url}}" alt="User
+                            avatar"
+                                 class="author-avatar">
+                            <span class="author-name">
+                                {{ review.user.username }} @
+                                {{ review.updated_at }}</span>
+                        </div>
+                    </div>
+                {% empty %}
+                    <p> No reviews yet</p>
+                {% endfor %}
+            </div>
+        </section>
+    </div>
+    </main>
+{% endblock %}

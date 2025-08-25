@@ -11,3 +11,7 @@ class UserCreateView(CreateView):
 
 class UserAccountView(TemplateView):
     template_name = "users/account.html"
+
+
+class UserCommunityView(TemplateView):
+    template_name = "community.html"

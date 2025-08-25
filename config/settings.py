@@ -17,9 +17,11 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "users.apps.UsersConfig",
     "rest_framework",
     "rest_framework.authtoken",
+    "users",
+    "products",
+    "orders",
 ]
 
 MIDDLEWARE = [
@@ -37,7 +39,7 @@ ROOT_URLCONF = "config.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [BASE_DIR / "templates"],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -91,3 +93,10 @@ SUCCESS_REDIRECT_URL = "/"
 LOGIN_URL = "/users/login/"
 LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "/users/login/"
+
+PRODUCTS_QUERY_MAP = {
+    "rating": "-rating",
+    "price_asc": "price",
+    "price_desc": "-price",
+    "new": "-created_at",
+}
