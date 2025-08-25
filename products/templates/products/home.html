@@ -57,6 +57,18 @@
                 </div>
             </div>
 
+            {% if page_obj.object_list %}
+    <!-- Existing product grid -->
+{% else %}
+    <div class="no-results">
+        <h3>No products found</h3>
+        {% if request.GET.q %}
+            <p>No products match your search for "{{ request.GET.q }}"</p>
+        {% else %}
+            <p>No products are currently available.</p>
+        {% endif %}
+    </div>
+{% endif %}
             <div class="product-grid">
                 <!-- Product Cards-->
                 {% for product in page_obj %}
@@ -99,13 +111,17 @@
                         <!-- Show all pages if there are 7 or fewer -->
                         {% for num in page_obj.paginator.page_range %}
                             {% if page_obj.number == num %}
-                                <span class="pagination__link active">{{ num }}</span>
+                                <span
+                                        class="pagination__link active">
+                                    {{ num }}
+                                </span>
                             {% else %}
-                                <a href="?page={{ num }}" class="pagination__link">{{ num }}</a>
+                                <a href="?page={{ num }}"
+                                   class="pagination__link">{{ num }}</a>
                             {% endif %}
                         {% endfor %}
                     {% else %}
-                        <!-- Smart pagination for many pages -->
+                        <!-- pagination for many pages -->
                         {% if page_obj.number <= 4 %}
                             <!-- Show first 5 pages, then dots, then last page -->
                             {% for num in page_obj.paginator.page_range %}

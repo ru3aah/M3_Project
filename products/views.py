@@ -1,3 +1,6 @@
+from unicodedata import category
+
+from django.db.models import Q
 from django.views.generic import DetailView, ListView, TemplateView
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
@@ -47,14 +50,31 @@ class ProductDetailView(DetailView):
 
 class ProductListView(ListView):
     model = Product
-    queryset = Product.objects.filter(available=True)
     template_name = "products/home.html"
     paginate_by = 1
+    allow_empty = True
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["categories"] = Category.objects.all()
         return context
+
+    def get_queryset(self):
+        qs = (
+            Product.objects.filter(available=True)
+            .select_related("category")
+            .annotate(rating=models.Avg("reviews__rating"))
+        )
+        # filter by category
+        categories = self.request.GET.get("categories", None)
+        if categories:
+            qs = qs.filter(category__slug__in=categories.split(","))
+
+        # search
+        to_search = self.request.GET.get("q", None)
+        if to_search:
+            qs = qs.filter(Q(name__icontains=to_search))
+        return qs
 
     def paginate_queryset(self, queryset, page_size):
         """Override to handle pagination errors gracefully"""

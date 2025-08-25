@@ -40,46 +40,15 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
 
-        // 2. Robust Pagination Logic - Firefox Extension Compatible
+        // 2. Pagination Logic
         const paginationList = document.querySelector('.pagination-list');
         if (paginationList) {
             const paginationLinks = paginationList.querySelectorAll('.pagination__link');
             paginationLinks.forEach(link => {
                 link.addEventListener('click', function(event) {
-                    // Handle spans (active page indicators) - prevent default
-                    if (this.tagName === 'SPAN') {
-                        event.preventDefault();
-                        event.stopPropagation();
-                        return false;
-                    }
-                    
-                    // For anchor tags - force navigation even if extensions interfere
-                    if (this.tagName === 'A' && this.href) {
-                        // Let the default behavior happen first, but also force it
-                        setTimeout(() => {
-                            // Backup navigation in case extensions block the default
-                            if (window.location.href === this.href) {
-                                return; // Navigation already happened
-                            }
-                            window.location.href = this.href;
-                        }, 0);
-                    }
-                });
-                
-                // Additional event listener for Firefox extensions that might interfere
-                link.addEventListener('mousedown', function(event) {
-                    if (this.tagName === 'A' && this.href) {
-                        // Store the target URL for potential forced navigation
-                        this.dataset.targetUrl = this.href;
-                    }
-                });
-                
-                // Fallback for middle-click and right-click scenarios
-                link.addEventListener('auxclick', function(event) {
-                    if (this.tagName === 'A' && this.href && event.button === 1) {
-                        // Middle click - open in new tab
-                        window.open(this.href, '_blank');
-                    }
+                    event.preventDefault();
+                    paginationLinks.forEach(lnk => lnk.classList.remove('active'));
+                    this.classList.add('active');
                 });
             });
         }
@@ -251,7 +220,6 @@ document.addEventListener('DOMContentLoaded', function() {
                         placeholder.style.backgroundImage = `url('${e.target.result}')`;
                         placeholder.style.backgroundSize = 'cover';
                         placeholder.style.backgroundPosition = 'center';
-                        placeholder.style.color = 'transparent';
                     }
                     reader.readAsDataURL(file);
                 }
