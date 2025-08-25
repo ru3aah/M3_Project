@@ -40,9 +40,6 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
 
-        // 2. Pagination Logic
-
-
         // 3. Filter Logic (Keywords and Checkboxes)
         const keywordsList = document.querySelector('.keywords-list');
         const checkboxes = document.querySelectorAll('.checkbox-group input[type="checkbox"]');

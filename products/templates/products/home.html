@@ -28,7 +28,7 @@
                 <div class="checkbox-group">
                     {% for category in categories %}
                         <label class="checkbox-container">{{ category.name }}
-                        <input type="checkbox" data-keyword={{ category.name }}>
+                        <input type="checkbox" data-keyword={{ category.slug }}>
                         <span class="checkmark"></span>
                     </label>
                     {% empty %}
@@ -36,6 +36,10 @@
                     {% endfor %}
                 </div>
             </div>
+            <div class="sidebar__section">
+                <button class="button button--primary">Apply Filter</button>
+            </div>
+
         </aside>
 
         <section class="products-area product-grid-section">
