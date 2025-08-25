@@ -54,7 +54,6 @@ class ProductListView(ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["categories"] = Category.objects.all()
-        # Remove the products line as page_obj already contains paginated products
         return context
 
     def paginate_queryset(self, queryset, page_size):
@@ -71,7 +70,7 @@ class ProductListView(ListView):
 
         try:
             page_number = int(page)
-        except ValueError:
+        except (ValueError, TypeError):
             page_number = 1
 
         # Ensure page number is at least 1
