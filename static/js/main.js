@@ -1,226 +1,305 @@
-document.addEventListener('DOMContentLoaded', function() {
+// 3. Filter Logic (Keywords and Checkboxes)
+const keywordsList = document.querySelector('.keywords-list');
 
-    // --- General logic for all pages (Login/Logout Simulation) ---
-    const loginForm = document.getElementById('login-form');
-    const logoutButton = document.getElementById('logout-button');
-    function checkLoginStatus() {
-        if (localStorage.getItem('isLoggedIn') === 'true') {
-            document.body.classList.add('user-logged-in');
-        } else {
-            document.body.classList.remove('user-logged-in');
-        }
-    }
-    if (loginForm) {
-        loginForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            localStorage.setItem('isLoggedIn', 'true');
-            const nextUrl = new URLSearchParams(window.location.search).get('next');
-            window.location.href = nextUrl || 'home.html';
+function displayFilterTags() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const categories = urlParams.get('categories');
+    
+    if (categories && keywordsList) {
+        const categoryArray = categories.split(',');
+        
+        // Clear existing tags
+        keywordsList.innerHTML = '';
+        
+        categoryArray.forEach(category => {
+            const tag = document.createElement('span');
+            tag.className = 'filter-tag';
+            tag.innerHTML = `
+                ${category}
+                <button type="button" class="remove-tag" data-category="${category}">×</button>
+            `;
+            keywordsList.appendChild(tag);
         });
-    }
-    if (logoutButton) {
-        logoutButton.addEventListener('click', function(e) {
-            e.preventDefault();
-            localStorage.removeItem('isLoggedIn');
-            window.location.href = 'home.html';
-        });
-    }
-    checkLoginStatus();
-
-
-    // --- Logic for the Main Page (home.html) ---
-    const homePageContent = document.querySelector('.main-content-grid');
-    if (homePageContent) {
-        // 1. Sort Options Logic
-        const sortButtons = document.querySelectorAll('.sort-options .sort-button');
-        sortButtons.forEach(button => {
+        
+        // Add event listeners to remove buttons
+        document.querySelectorAll('.remove-tag').forEach(button => {
             button.addEventListener('click', function() {
-                sortButtons.forEach(btn => btn.classList.remove('active-sort'));
-                this.classList.add('active-sort');
+                removeFilter(this.getAttribute('data-category'));
             });
         });
-
-        // 3. Filter Logic (Keywords and Checkboxes)
-        const keywordsList = document.querySelector('.keywords-list');
-
-        const filterButton = document.querySelector('.filter-button');
-        if (filterButton) {
-            filterButton.addEventListener('click', function()
-            {
-                keywordsList.classList.toggle('is-hidden');
-            });
-        }
-
-
-        const checkboxes = document.querySelectorAll('.checkbox-group input[type="checkbox"]');
-
-        if (keywordsList && checkboxes.length > 0) {
-
-            checkboxes.forEach(checkbox => {
-                checkbox.addEventListener('change', function() {
-                    const keyword = this.dataset.keyword;
-                    if (this.checked) {
-                        if (!document.querySelector(`.keyword-tag[data-keyword="${keyword}"]`)) {
-                            const newTag = document.createElement('span');
-                            newTag.className = 'keyword-tag';
-                            newTag.setAttribute('data-keyword', keyword);
-                            newTag.innerHTML = `${keyword} <i class="fa-solid fa-xmark remove-keyword-icon"></i>`;
-                            keywordsList.appendChild(newTag);
-                        }
-                    } else {
-                        const tagToRemove = document.querySelector(`.keyword-tag[data-keyword="${keyword}"]`);
-                        if (tagToRemove) {
-                            tagToRemove.remove();
-                        }
-                    }
-                });
-            });
-
-            keywordsList.addEventListener('click', function(event) {
-                const keywordIcon = event.target.closest('.remove-keyword-icon');
-                if (keywordIcon) {
-                    const keywordTag = keywordIcon.closest('.keyword-tag');
-                    const keywordText = keywordTag.dataset.keyword;
-                    const checkbox = document.querySelector(`.checkbox-container input[data-keyword="${keywordText}"]`);
-                    if (checkbox) {
-                        checkbox.checked = false;
-                    }
-                    keywordTag.remove();
-                }
-            });
-        }
+    } else if (keywordsList) {
+        // Clear tags if no categories in URL
+        keywordsList.innerHTML = '';
     }
+}
 
-    // --- Logic for Product Detail Pages (product-*.html) ---
-    const productPageContent = document.querySelector('.page-product');
-    if (productPageContent) {
-        // Accordion
-        const accordionTitle = document.querySelector('.accordion-title');
-        if (accordionTitle) {
-            accordionTitle.addEventListener('click', function() {
-                this.closest('.accordion-item').classList.toggle('active');
-            });
+// Function to remove a specific filter
+function removeFilter(categoryToRemove) {
+    const urlParams = new URLSearchParams(window.location.search);
+    const categories = urlParams.get('categories');
+    
+    if (categories) {
+        const categoryArray = categories.split(',');
+        const filteredCategories = categoryArray.filter(cat => cat !== categoryToRemove);
+        
+        // Update URL parameters
+        if (filteredCategories.length > 0) {
+            urlParams.set('categories', filteredCategories.join(','));
+        } else {
+            urlParams.delete('categories');
         }
-        // "Add to Cart" Button and Counter
-        const cartControls = document.querySelector('.cart-controls');
-        if (cartControls) {
-            const addToCartBtn = cartControls.querySelector('#add-to-cart-btn');
-            const quantityCounter = cartControls.querySelector('#quantity-counter');
-            const decreaseBtn = quantityCounter.querySelector('[data-action="decrease"]');
-            const increaseBtn = quantityCounter.querySelector('[data-action="increase"]');
-            const quantityValueSpan = quantityCounter.querySelector('.quantity-value');
-            let quantity = 0;
-            function updateView() {
-                if (quantity === 0) {
-                    addToCartBtn.classList.remove('is-hidden');
-                    quantityCounter.classList.add('is-hidden');
-                } else {
-                    addToCartBtn.classList.add('is-hidden');
-                    quantityCounter.classList.remove('is-hidden');
-                    quantityValueSpan.textContent = `${quantity} in cart`;
-                }
+        
+        // Reset to first page when removing filters
+        urlParams.delete('page');
+        
+        const newUrl = `${window.location.pathname}?${urlParams.toString()}`;
+        window.location.href = newUrl;
+    }
+}
+
+// Function to restore checkbox states from URL parameters
+function restoreCheckboxStates() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const categories = urlParams.get('categories');
+    
+    // First, uncheck all checkboxes
+    document.querySelectorAll('.checkbox-group input[type="checkbox"]').forEach(checkbox => {
+        checkbox.checked = false;
+    });
+    
+    // Then check the ones that should be checked based on URL
+    if (categories) {
+        const categoryArray = categories.split(',');
+        
+        categoryArray.forEach(category => {
+            const checkbox = document.querySelector(`input[type="checkbox"][data-keyword="${category}"]`);
+            if (checkbox) {
+                checkbox.checked = true;
             }
-            addToCartBtn.addEventListener('click', function() { quantity = 1; updateView(); });
-            decreaseBtn.addEventListener('click', function() { if (quantity > 0) { quantity--; updateView(); } });
-            increaseBtn.addEventListener('click', function() { quantity++; updateView(); });
-            updateView();
-        }
+        });
     }
+}
 
-    // --- Logic for Cart Page (cart.html) ---
-    const cartPageContent = document.querySelector('.cart-page-wrapper');
-    if (cartPageContent) {
-        const cartItemsList = document.getElementById('cart-items-list');
-        const cartTotalPriceElem = document.getElementById('cart-total-price');
-        function updateCartTotal() {
-            let total = 0;
-            document.querySelectorAll('.cart-item').forEach(item => {
-                const priceText = item.querySelector('[data-item-total-price]').textContent;
-                if (priceText) {
-                    total += parseFloat(priceText.replace('$', ''));
-                }
-            });
-            if (cartTotalPriceElem) cartTotalPriceElem.textContent = `$${total.toFixed(2)}`;
-        }
-        if (cartItemsList) {
-            cartItemsList.addEventListener('click', function(event) {
-                const cartItem = event.target.closest('.cart-item');
-                if (!cartItem) return;
-                const quantityElem = cartItem.querySelector('.quantity-value-cart');
-                const itemTotalElem = cartItem.querySelector('[data-item-total-price]');
-                const basePrice = parseFloat(cartItem.dataset.price);
-                let quantity = parseInt(quantityElem.textContent);
-                if (event.target.closest('[data-action="increase"]')) {
-                    quantity++;
-                } else if (event.target.closest('[data-action="decrease"]')) {
-                    quantity = quantity > 1 ? quantity - 1 : 0;
-                }
-                if (event.target.closest('[data-action="remove"]') || quantity === 0) {
-                    cartItem.remove();
-                } else {
-                    quantityElem.textContent = quantity;
-                    itemTotalElem.textContent = `$${(basePrice * quantity).toFixed(2)}`;
-                }
-                updateCartTotal();
-            });
-        }
-        updateCartTotal();
+// Function to restore search input value from URL
+function restoreSearchInput() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const searchQuery = urlParams.get('q');
+    const searchInput = document.querySelector('.search-input');
+    
+    if (searchQuery && searchInput) {
+        searchInput.value = searchQuery;
     }
+}
 
-    // --- Logic for Account and Admin Pages ---
-    const accountAdminWrapper = document.querySelector('.account-page-wrapper, .admin-page-wrapper');
-    if (accountAdminWrapper) {
-        // Account Page Tabs
-        const accountTabs = document.querySelectorAll('.account-tab');
-        const tabPanes = document.querySelectorAll('.tab-pane');
-        if (accountTabs.length > 0 && tabPanes.length > 0) {
-            accountTabs.forEach(tab => {
-                tab.addEventListener('click', function() {
-                    accountTabs.forEach(item => item.classList.remove('active'));
-                    tabPanes.forEach(pane => pane.classList.remove('active'));
-                    const targetPane = document.querySelector(this.dataset.tabTarget);
-                    this.classList.add('active');
-                    if (targetPane) targetPane.classList.add('active');
-                });
-            });
-        }
-
-        // Admin Panel - Category Tags
-        const categoryTagsContainer = document.querySelector('.category-tags');
-        if (categoryTagsContainer) {
-            categoryTagsContainer.addEventListener('click', function(e) {
-                const clickedTag = e.target.closest('.category-tag');
-                if (clickedTag) {
-                    categoryTagsContainer.querySelectorAll('.category-tag').forEach(t => t.classList.remove('active'));
-                    clickedTag.classList.add('active');
-                }
-            });
-        }
-
-        // Image Upload Simulation
-        const uploadButton = document.getElementById('upload-image-btn');
-        const fileInput = document.getElementById('image-upload-input');
-
-        if (uploadButton && fileInput) {
-            uploadButton.addEventListener('click', function() {
-                fileInput.click();
-            });
-
-            fileInput.addEventListener('change', function(event) {
-                const file = event.target.files[0];
-                if (file) {
-                    const reader = new FileReader();
-                    const placeholder = document.querySelector('.image-upload-placeholder');
-
-                    reader.onload = function(e) {
-                        placeholder.innerHTML = '';
-                        placeholder.style.backgroundImage = `url('${e.target.result}')`;
-                        placeholder.style.backgroundSize = 'cover';
-                        placeholder.style.backgroundPosition = 'center';
-                    }
-                    reader.readAsDataURL(file);
-                }
-            });
-        }
+// Function to restore active sort button from URL
+function restoreSortState() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const sort = urlParams.get('sort') || 'new';
+    
+    // Remove active class from all sort buttons
+    document.querySelectorAll('.sort-button').forEach(button => {
+        button.classList.remove('active-sort');
+    });
+    
+    // Map URL sort values to button text
+    let targetButtonText = 'New'; // Default
+    switch(sort) {
+        case 'new':
+            targetButtonText = 'New';
+            break;
+        case 'price_asc':
+            targetButtonText = 'Price ascending';
+            break;
+        case 'price_desc':
+            targetButtonText = 'Price descending';
+            break;
+        case 'rating':
+            targetButtonText = 'Rating';
+            break;
     }
+    
+    // Find and activate the corresponding button
+    document.querySelectorAll('.sort-button').forEach(button => {
+        if (button.textContent.trim() === targetButtonText) {
+            button.classList.add('active-sort');
+        }
+    });
+}
+
+// Function to remove all filters
+function removeAllFilters() {
+    const urlParams = new URLSearchParams(window.location.search);
+    
+    // Remove categories parameter
+    urlParams.delete('categories');
+    
+    // Reset to first page when removing all filters
+    urlParams.delete('page');
+    
+    const newUrl = `${window.location.pathname}?${urlParams.toString()}`;
+    window.location.href = newUrl;
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    displayFilterTags();
+    restoreCheckboxStates();
+    restoreSearchInput();
+    restoreSortState();
+    // Removed addCheckboxListeners() - checkboxes no longer auto-apply filters
 });
+
+// Search functionality
+const searchInput = document.querySelector('.search-input');
+const searchButton = document.querySelector('.search-button');
+
+if (searchButton && searchInput) {
+    // Handle search button click
+    searchButton.addEventListener('click', function(e) {
+        e.preventDefault();
+        performSearch();
+    });
+    
+    // Handle Enter key in search input
+    searchInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            performSearch();
+        }
+    });
+}
+
+function performSearch() {
+    const searchQuery = searchInput.value.trim();
+    const urlParams = new URLSearchParams(window.location.search);
+    
+    // Update or remove search parameter
+    if (searchQuery) {
+        urlParams.set('q', searchQuery);
+    } else {
+        urlParams.delete('q');
+    }
+    
+    // Reset to first page when searching
+    urlParams.delete('page');
+    
+    const newUrl = `${window.location.pathname}?${urlParams.toString()}`;
+    window.location.href = newUrl;
+}
+
+// Sort button functionality
+document.querySelectorAll('.sort-button').forEach(button => {
+    button.addEventListener('click', function() {
+        // Remove active class from all buttons
+        document.querySelectorAll('.sort-button').forEach(btn => {
+            btn.classList.remove('active-sort');
+        });
+        
+        // Add active class to clicked button
+        this.classList.add('active-sort');
+        
+        // Get current URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const sortText = this.textContent.trim();
+        
+        // Map display text to Django view keys
+        let sort = 'new';
+        switch(sortText) {
+            case 'New':
+                sort = 'new';
+                break;
+            case 'Price ascending':
+                sort = 'price_asc';
+                break;
+            case 'Price descending':
+                sort = 'price_desc';
+                break;
+            case 'Rating':
+                sort = 'rating';
+                break;
+            default:
+                sort = 'new';
+        }
+        
+        urlParams.set('sort', sort);
+        
+        // Reset to first page when sorting
+        urlParams.delete('page');
+        
+        const newUrl = `${window.location.pathname}?${urlParams.toString()}`;
+        window.location.href = newUrl;
+    });
+});
+
+// Filter button functionality - now the main way to apply filters
+const filterButton = document.querySelector('#filter-button');
+if (filterButton) {
+    filterButton.addEventListener('click', function(e){
+        e.preventDefault();
+        
+        // Get current URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const q = urlParams.get('q') || '';
+        
+        // Get sort value - map display text to Django view keys
+        const activeSort = document.querySelector('.sort-options .sort-button.active-sort');
+        let sort = 'new'; // Default to lowercase 'new'
+        
+        if (activeSort) {
+            const sortText = activeSort.textContent.trim();
+            
+            // Map display text to lowercase keys for Django
+            switch(sortText) {
+                case 'New':
+                    sort = 'new';  // lowercase
+                    break;
+                case 'Price ascending':
+                    sort = 'price_asc';
+                    break;
+                case 'Price descending':
+                    sort = 'price_desc';
+                    break;
+                case 'Rating':
+                    sort = 'rating';
+                    break;
+                default:
+                    sort = 'new';
+            }
+        }
+        
+        // Collect selected filters from checkboxes
+        const selectedFilters = [];
+        const checkedBoxes = document.querySelectorAll('.checkbox-group input[type="checkbox"]:checked');
+        
+        checkedBoxes.forEach(checkbox => {
+            const filterValue = checkbox.getAttribute('data-keyword');
+            if (filterValue) {
+                selectedFilters.push(filterValue);
+            }
+        });
+        
+        const searchParams = new URLSearchParams();
+        
+        if (q) searchParams.append('q', q);
+        searchParams.append('sort', sort);
+        
+        if (selectedFilters.length > 0) {
+            searchParams.append('categories', selectedFilters.join(','));
+        }
+        
+        // Reset to first page when applying filters
+        searchParams.delete('page');
+        
+        const newUrl = `${window.location.pathname}?${searchParams.toString()}`;
+        window.location.href = newUrl;
+    });
+}
+
+// Remove filters button functionality
+const removeFiltersButton = document.querySelector('#remove-filters-button');
+if (removeFiltersButton) {
+    removeFiltersButton.addEventListener('click', function(e) {
+        e.preventDefault();
+        removeAllFilters();
+    });
+}

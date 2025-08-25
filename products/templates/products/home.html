@@ -37,10 +37,9 @@
                 </div>
             </div>
             <div class="sidebar__section">
-                <button class="button button--primary" id="filter-button"
-                >Apply Filter</button>
-            </div>
-
+    <button class="button button--primary" id="filter-button">Apply Filter</button>
+    <button class="button button--secondary" id="remove-filters-button">Remove Filters</button>
+</div>
         </aside>
 
         <section class="products-area product-grid-section">
@@ -121,7 +120,7 @@
             {% if page_obj.paginator.num_pages > 1 %}
             <div class="pagination">
                 {% if page_obj.has_previous %}
-                    <a href="?page={{ page_obj.previous_page_number }}"
+                    <a href="?{% if request.GET.q %}q={{ request.GET.q }}&{% endif %}{% if request.GET.sort %}sort={{ request.GET.sort }}&{% endif %}{% if request.GET.categories %}categories={{ request.GET.categories }}&{% endif %}page={{ page_obj.previous_page_number }}"
                        class="pagination__link pagination__link--prev">
                         <i class="fa-solid fa-arrow-left"></i>
                         <span>Previous</span>
@@ -132,12 +131,11 @@
                         <!-- Show all pages if there are 7 or fewer -->
                         {% for num in page_obj.paginator.page_range %}
                             {% if page_obj.number == num %}
-                                <span
-                                        class="pagination__link active">
+                                <span class="pagination__link active">
                                     {{ num }}
                                 </span>
                             {% else %}
-                                <a href="?page={{ num }}"
+                                <a href="?{% if request.GET.q %}q={{ request.GET.q }}&{% endif %}{% if request.GET.sort %}sort={{ request.GET.sort }}&{% endif %}{% if request.GET.categories %}categories={{ request.GET.categories }}&{% endif %}page={{ num }}"
                                    class="pagination__link">{{ num }}</a>
                             {% endif %}
                         {% endfor %}
@@ -152,29 +150,28 @@
                                             {{ num }}
                                         </span>
                                     {% else %}
-                                        <a href="?page={{ num }}"
+                                        <a href="?{% if request.GET.q %}q={{ request.GET.q }}&{% endif %}{% if request.GET.sort %}sort={{ request.GET.sort }}&{% endif %}{% if request.GET.categories %}categories={{ request.GET.categories }}&{% endif %}page={{ num }}"
                                            class="pagination__link">
                                             {{ num }}</a>
                                     {% endif %}
                                 {% elif num == page_obj.paginator.num_pages %}
                                     <span class="pagination__dots">...</span>
-                                    <a href="?page={{ num }}"
+                                    <a href="?{% if request.GET.q %}q={{ request.GET.q }}&{% endif %}{% if request.GET.sort %}sort={{ request.GET.sort }}&{% endif %}{% if request.GET.categories %}categories={{ request.GET.categories }}&{% endif %}page={{ num }}"
                                        class="pagination__link">
                                         {{ num }}</a>
                                 {% endif %}
                             {% endfor %}
                         {% elif page_obj.number >= page_obj.paginator.num_pages|add:'-3' %}
                           <!-- Show first page, dots, last 4 pages -->
-                            <a href="?page=1" class="pagination__link">1</a>
+                            <a href="?{% if request.GET.q %}q={{ request.GET.q }}&{% endif %}{% if request.GET.sort %}sort={{ request.GET.sort }}&{% endif %}{% if request.GET.categories %}categories={{ request.GET.categories }}&{% endif %}page=1" class="pagination__link">1</a>
                             <span class="pagination__dots">...</span>
                             {% for num in page_obj.paginator.page_range %}
                                 {% if num >= page_obj.paginator.num_pages|add:'-4' %}
                                     {% if page_obj.number == num %}
-                                        <span
-                                                class="pagination__link active">
+                                        <span class="pagination__link active">
                                             {{ num }}</span>
                                     {% else %}
-                                        <a href="?page={{ num }}"
+                                        <a href="?{% if request.GET.q %}q={{ request.GET.q }}&{% endif %}{% if request.GET.sort %}sort={{ request.GET.sort }}&{% endif %}{% if request.GET.categories %}categories={{ request.GET.categories }}&{% endif %}page={{ num }}"
                                            class="pagination__link">
                                             {{ num }}</a>
                                     {% endif %}
@@ -182,7 +179,7 @@
                             {% endfor %}
                         {% else %}
                             <!-- Show first page, dots, current page area, dots, last page -->
-                            <a href="?page=1" class="pagination__link">1</a>
+                            <a href="?{% if request.GET.q %}q={{ request.GET.q }}&{% endif %}{% if request.GET.sort %}sort={{ request.GET.sort }}&{% endif %}{% if request.GET.categories %}categories={{ request.GET.categories }}&{% endif %}page=1" class="pagination__link">1</a>
                             <span class="pagination__dots">...</span>
                             {% for num in page_obj.paginator.page_range %}
                                 {% if num >= page_obj.number|add:'-1' and num <= page_obj.number|add:'1' %}
@@ -190,21 +187,21 @@
                                         <span class="pagination__link active">
                                             {{ num }}</span>
                                     {% else %}
-                                        <a href="?page={{ num }}"
+                                        <a href="?{% if request.GET.q %}q={{ request.GET.q }}&{% endif %}{% if request.GET.sort %}sort={{ request.GET.sort }}&{% endif %}{% if request.GET.categories %}categories={{ request.GET.categories }}&{% endif %}page={{ num }}"
                                            class="pagination__link">
                                             {{ num }}</a>
                                     {% endif %}
                                 {% endif %}
                             {% endfor %}
                             <span class="pagination__dots">...</span>
-                            <a href="?page={{ page_obj.paginator.num_pages }}"
+                            <a href="?{% if request.GET.q %}q={{ request.GET.q }}&{% endif %}{% if request.GET.sort %}sort={{ request.GET.sort }}&{% endif %}{% if request.GET.categories %}categories={{ request.GET.categories }}&{% endif %}page={{ page_obj.paginator.num_pages }}"
                                class="pagination__link">
                                 {{ page_obj.paginator.num_pages }}</a>
                         {% endif %}
                     {% endif %}
                 </div>
                 {% if page_obj.has_next %}
-                    <a href="?page={{ page_obj.next_page_number }}"
+                    <a href="?{% if request.GET.q %}q={{ request.GET.q }}&{% endif %}{% if request.GET.sort %}sort={{ request.GET.sort }}&{% endif %}{% if request.GET.categories %}categories={{ request.GET.categories }}&{% endif %}page={{ page_obj.next_page_number }}"
                        class="pagination__link pagination__link--next">
                         <span>Next</span>
                         <i class="fa-solid fa-arrow-right"></i>
