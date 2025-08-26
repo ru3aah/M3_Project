@@ -56,28 +56,21 @@
                     <p>{{ product.description|linebreaks }}</p>
                 </div>
                 <div class="cart-controls">
-                    {% if user.is_authenticated %}
-                        <button class="button button--primary add-to-cart-button"
-                                id="add-to-cart-btn">
-                            <i class="fa-solid fa-cart-shopping"></i>
-                            <span>Add to Cart</span>
-                        </button>
-                        <div class="quantity-counter is-hidden"
-                             id="quantity-counter">
-                            <button class="quantity-btn" data-action="decrease"
-                                    aria-label="Decrease quantity"><i
-                                    class="fa-solid fa-minus"></i></button>
-                            <span class="quantity-value">1 in cart</span>
-                            <button class="quantity-btn" data-action="increase"
-                                    aria-label="Increase quantity"><i
-                                    class="fa-solid fa-plus"></i></button>
-                        </div>
-                    {% else %}
-                        <a href="{% url 'users:login' %}"
-                           class="button button--primary login-for-shopping-button">
-                            <span>Log in for Shopping</span>
-                        </a>
-                    {% endif %}
+                    <button class="button button--primary add-to-cart-button"
+                            id="add-to-cart-btn">
+                        <i class="fa-solid fa-cart-shopping"></i>
+                        <span>Add to Cart</span>
+                    </button>
+                    <div class="quantity-counter is-hidden"
+                         id="quantity-counter">
+                        <button class="quantity-btn" data-action="decrease"
+                                aria-label="Decrease quantity"><i
+                                class="fa-solid fa-minus"></i></button>
+                        <span class="quantity-value">1 in cart</span>
+                        <button class="quantity-btn" data-action="increase"
+                                aria-label="Increase quantity"><i
+                                class="fa-solid fa-plus"></i></button>
+                    </div>
                 </div>
             </div>
         </section>
