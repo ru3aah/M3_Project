@@ -74,6 +74,24 @@ class CategoryAdmin(admin.ModelAdmin):
     list_filter = ("parent",)
 
 
+class ProductReviewAdmin(admin.ModelAdmin):
+    list_display = (
+        "product",
+        "user",
+        "title",
+        "comment",
+        "rating",
+        "created_at",
+        "updated_at",
+    )
+    list_filter = ("product", "user")
+    search_fields = ("product", "user", "title", "comment")
+    ordering = ("-created_at",)
+    date_hierarchy = "created_at"
+    readonly_fields = ("created_at", "updated_at")
+    list_per_page = 25
+
+
 admin.site.register(Product, ProductAdmin)
 admin.site.register(Category, CategoryAdmin)
-admin.site.register(ProductReview)
+admin.site.register(ProductReview, ProductReviewAdmin)

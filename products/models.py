@@ -112,3 +112,10 @@ class ProductReview(JournalizedModel):
     class Meta:
         verbose_name = "Product Review"
         verbose_name_plural = "Product Reviews"
+
+
+class ProductTechSpec(models.Model):
+    product = models.ForeignKey(
+        Product, on_delete=models.CASCADE, related_name="tech_specs"
+    )
+    tech_spec = models.JSONField(blank=True, null=True)
