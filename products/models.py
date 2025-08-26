@@ -121,6 +121,25 @@ class ProductReview(JournalizedModel):
 
 
 class ProductTechSpec(models.Model):
+    """
+    Represents the technical specifications of a product.
+
+    This Django model stores technical specifications of a product in
+    JSON format.
+    Each instance of the model is associated with a specific product.
+
+    :ivar product: The product foreign key associated with the technical
+                    specifications.
+    :ivar tech_spec: JSON storing the technical specifications of the product
+                    May be none or empty. Shall include two key:value pairs:
+        key "name" suits for Specification Name, String value
+        key "value" suits for Specification Value. May be String or
+            List of objects.
+        - **String values** like `"USA"` are displayed as `"USA"`
+        - **List values** like `["Red", "Blue"]` are displayed as `"Red, Blue"`
+        - **Complex lists** like `[{"name": "Size", "value": "Large"}]`
+                            are displayed  as `"Size: Large"`
+    """
     product = models.ForeignKey(
         Product, on_delete=models.CASCADE, related_name="tech_specs"
     )
