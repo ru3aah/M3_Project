@@ -13,7 +13,7 @@ urlpatterns = [
             template_name="users/login.html",
             authentication_form=UserLoginForm,
             redirect_authenticated_user=True,
-            success_url="/",
+            success_url="account/",
         ),
         name="login",
     ),

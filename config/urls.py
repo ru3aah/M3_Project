@@ -1,9 +1,16 @@
 from django.contrib import admin
+from django.shortcuts import redirect
 from django.urls import path, include
 from django.conf.urls.static import static
 from config.settings import DEBUG, MEDIA_URL, MEDIA_ROOT
 
+
+def home_redirect(request):
+    return redirect("products:product-list")
+
+
 urlpatterns = [
+    path("", home_redirect),
     path("admin/", admin.site.urls),
     path("users/", include("users.urls", namespace="users")),
     path("products/", include("products.urls", namespace="products")),

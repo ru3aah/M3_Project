@@ -47,28 +47,29 @@
             </ul>
         </nav>
 
-        <!-- Block for unauthorized user -->
-        <div class="header__auth-buttons" id="auth-guest">
-            <a href="{% url 'users:login' %}
-" class="button button--secondary">Sign in</a>
-            <a href="{% url 'users:register' %}"
-               class="button button--primary">Register</a>
-        </div>
-
+        {% if user.is_authenticated %}
         <!-- Block for authorized user -->
-        <div class="header__user-actions" id="auth-user">
-            <a href="{% url 'users:account' %}" class="user-icon"
-               aria-label="My Account">
-                <img src="{% static 'img/icons/User_alt.svg' %}"
-                     alt="User Account">
-            </a>
-            <a href="cart.html" class="cart-icon"
-               aria-label="Shopping Cart">
-                <img src="{% static 'img/icons/Shopping_bag.svg' %}"
-                     alt="Shopping Cart">
-            </a>
-
+        <div class="header__user-actions">
+            <div class="user-account-section">
+                <a href="{% url 'users:account' %}" class="user-icon" aria-label="My Account">
+                    <i class="fas fa-user"></i>
+                </a>
+                <span class="user-label">{{ user.username }}</span>
+            </div>
+            <div class="cart-section">
+                <a href="#" class="cart-icon" aria-label="Shopping Cart">
+                    <i class="fas fa-shopping-bag"></i>
+                </a>
+                <span class="cart-label">Cart</span>
+            </div>
         </div>
+        {% else %}
+        <!-- Block for unauthorized user -->
+        <div class="header__auth-buttons">
+            <a href="{% url 'users:login' %}" class="button button--secondary">Sign in</a>
+            <a href="{% url 'users:register' %}" class="button button--primary">Register</a>
+        </div>
+        {% endif %}
     </div>
 </header>
 
@@ -96,4 +97,3 @@
 <script src="{% static 'js/main.js' %}"></script>
 </body>
 </html>
-

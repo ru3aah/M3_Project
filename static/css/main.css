@@ -837,26 +837,31 @@ footer {
 }
 
 
-/*
-========================================
-    Header User Actions (Logged-in state)
-========================================
-*/
+/* User Actions (for authenticated users) */
 .header__user-actions {
-    display: none;
+    width: 192px;
+    display: flex !important;
     align-items: center;
-    gap: 24px;
+    justify-content: flex-end;
+    gap: 16px;
 }
 
 .user-icon, .cart-icon {
-    display: block;
-    width: 38px;
-    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    transition: background-color 0.2s ease;
+    cursor: pointer;
+    color: var(--black-main);
+    font-size: 20px;
 }
 
-.user-icon img, .cart-icon img {
-    width: 100%;
-    height: 100%;
+.user-icon:hover, .cart-icon:hover {
+    background-color: var(--background-default);
+    color: var(--green);
 }
 
 .button--logout {
@@ -872,6 +877,8 @@ footer {
 ========================================
 */
 
+/* Remove the problematic CSS logic at the bottom */
+/* Comment out or delete these lines in your CSS:
 body:not(.user-logged-in) .header__user-actions {
     display: none;
 }
@@ -885,6 +892,7 @@ body.user-logged-in .header__auth-buttons {
 body.user-logged-in .header__user-actions {
     display: flex;
 }
+*/
 
 
 /*
@@ -1163,36 +1171,5 @@ body.user-logged-in .header__user-actions {
     width: 24px;
     height: 24px;
     display: flex;
-    justify-content: center;
-    align-items: center;
-    border-radius: 50%;
-    color: var(--black-main);
-    transition: background-color 0.2s ease;
-}
-
-.quantity-btn:hover {
-    background-color: var(--slate-200);
-}
-
-.quantity-value {
-    font-size: 16px;
-    font-weight: 600;
-    color: var(--dark-green);
-}
-
-/*
-========================================
-    Shopping Cart Page Styles
-========================================
-*/
-.cart-page-wrapper {
-    background-color: var(--background-grey);
-    padding: 64px 0;
-}
-
-.cart-container {
-    max-width: 640px;
-    margin: 0 auto;
-    display: flex;
-    flex-direction: column;
+    justify-content: center
 }
