@@ -113,9 +113,22 @@ class ProductReview(JournalizedModel):
         verbose_name = "Product Review"
         verbose_name_plural = "Product Reviews"
 
+    def __str__(self):
+        return (
+            f"{self.user.email} - {self.product.name} - {self.rating} - "
+            f"{self.title}"
+        )
+
 
 class ProductTechSpec(models.Model):
     product = models.ForeignKey(
         Product, on_delete=models.CASCADE, related_name="tech_specs"
     )
     tech_spec = models.JSONField(blank=True, null=True)
+
+    def __str__(self):
+        return f"{self.product.name} Tech Specs"
+
+    class Meta:
+        verbose_name = "Product Tech Spec"
+        verbose_name_plural = "Product Tech Specs"
