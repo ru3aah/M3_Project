@@ -36,17 +36,24 @@
                 </div>
                 <div class="cart-controls">
                     {% if user.is_authenticated %}
-                        <button class="button button--primary add-to-cart-button" id="add-to-cart-btn">
+                        <button class="button button--primary add-to-cart-button"
+                                id="add-to-cart-btn">
                             <i class="fa-solid fa-cart-shopping"></i>
                             <span>Add to Cart</span>
                         </button>
-                        <div class="quantity-counter is-hidden" id="quantity-counter">
-                            <button class="quantity-btn" data-action="decrease" aria-label="Decrease quantity"><i class="fa-solid fa-minus"></i></button>
+                        <div class="quantity-counter is-hidden"
+                             id="quantity-counter">
+                            <button class="quantity-btn" data-action="decrease"
+                                    aria-label="Decrease quantity"><i
+                                    class="fa-solid fa-minus"></i></button>
                             <span class="quantity-value">1 in cart</span>
-                            <button class="quantity-btn" data-action="increase" aria-label="Increase quantity"><i class="fa-solid fa-plus"></i></button>
+                            <button class="quantity-btn" data-action="increase"
+                                    aria-label="Increase quantity"><i
+                                    class="fa-solid fa-plus"></i></button>
                         </div>
                     {% else %}
-                        <a href="{% url 'users:login' %}" class="button button--primary login-for-shopping-button">
+                        <a href="{% url 'users:login' %}"
+                           class="button button--primary login-for-shopping-button">
                             <span>Log in for Shopping</span>
                         </a>
                     {% endif %}
@@ -104,7 +111,8 @@
                         </div>
                         <div class="review-author">
                             {% if review.user.image %}
-                                <img src="{{ review.user.image.url }}" alt="User avatar" class="author-avatar">
+                                <img src="{{ review.user.image.url }}"
+                                     alt="User avatar" class="author-avatar">
                             {% else %}
                                 <div class="author-avatar-placeholder">
                                     <i class="fas fa-user"></i>
