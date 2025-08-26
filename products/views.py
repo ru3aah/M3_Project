@@ -6,7 +6,7 @@ from django.views.generic import DetailView, ListView, TemplateView
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 from config.settings import PRODUCTS_QUERY_MAP
-from products.models import Product, ProductReview, Category
+from products.models import Product, ProductReview, Category, ProductTechSpec
 from django.db import models
 
 
@@ -50,15 +50,20 @@ class ProductDetailView(DetailView):
         return context
 
 
+class Pruduct:
+    pass
+
+
 class ProductListView(ListView):
     model = Product
     template_name = "products/home.html"
-    paginate_by = 2
+    paginate_by = 12
     allow_empty = True
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["categories"] = Category.objects.all()
+        context["tech_specs"] = ProductTechSpec.objects.all()
         return context
 
     def get_queryset(self):
