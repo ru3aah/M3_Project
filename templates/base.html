@@ -51,9 +51,11 @@
         <!-- Block for authorized user -->
         <div class="header__user-actions">
             <div class="user-account-section">
-                <a href="{% url 'users:account' %}" class="user-icon" aria-label="My Account">
+                <a href="{% url 'users:account' %}"
+                   class="user-icon" aria-label="My Account">
                     {% if user.image %}
-                        <img src="{{ user.image.url }}" alt="{{ user.username }}" class="user-avatar">
+                        <img src="{{ user.image.url }}" alt="{{ user.username }}"
+                             class="user-avatar">
                     {% else %}
                         <i class="fas fa-user"></i>
                     {% endif %}
