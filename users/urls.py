@@ -18,5 +18,4 @@ urlpatterns = [
         name="login",
     ),
     path("account/", views.UserAccountView.as_view(), name="account"),
-    path("community/", views.UserCommunityView.as_view(), name="community"),
 ]

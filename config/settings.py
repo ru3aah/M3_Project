@@ -23,6 +23,7 @@ INSTALLED_APPS = [
     "products",
     "orders",
     "resources",
+    "community",
 ]
 
 MIDDLEWARE = [

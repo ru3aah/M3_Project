@@ -8,6 +8,7 @@ urlpatterns = [
     path("users/", include("users.urls", namespace="users")),
     path("products/", include("products.urls", namespace="products")),
     path("resources/", include("resources.urls", namespace="resources")),
+    path("community/", include("community.urls", namespace="community")),
 ]
 
 # Serve media files during development
