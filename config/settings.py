@@ -24,6 +24,7 @@ INSTALLED_APPS = [
     "orders",
     "resources",
     "community",
+    "contacts",
 ]
 
 MIDDLEWARE = [
