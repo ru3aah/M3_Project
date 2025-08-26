@@ -140,6 +140,7 @@ class ProductTechSpec(models.Model):
         - **Complex lists** like `[{"name": "Size", "value": "Large"}]`
                             are displayed  as `"Size: Large"`
     """
+
     product = models.ForeignKey(
         Product, on_delete=models.CASCADE, related_name="tech_specs"
     )
