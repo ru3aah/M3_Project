@@ -12,21 +12,20 @@ from django.db import models
 
 class ProductDetailView(DetailView):
     """
-    Handles the display of detailed information for a specific product.
+    Handles the display of detailed information for a single product,
+    including reviews and technical specifications.
+    This view is tailored to aggregate and pre-process related objects
+    to optimize database queries while providing a
+    well-structured context for rendering the product details on a template.
 
-    This view is responsible for rendering the details of a single
-    `Product` instance. It uses the specified queryset to optimize
-    database access by selecting related data for the `category` field
-    and prefetching recent `reviews` for the product. The template
-    used for rendering is defined in the `template_name` attribute.
-
-    :ivar model: The model associated with this DetailView.
+    :ivar model: The model class associated with the view,
+                representing the Product entity.
     :type model: Product
-    :ivar queryset: Queryset to fetch the product instance along with
-         a related category and prefetch recent reviews.
-    :type queryset: QuerySet
-    :ivar template_name: Path to the template used for rendering the
-        product details.
+    :ivar queryset: The queryset used to fetch Product objects,
+                    including category and prefetched related data
+                    for reviews and tech specs.
+    :type queryset: QuerySet[Product]
+    :ivar template_name: The path to the template used to render the product details.
     :type template_name: str
     """
 
@@ -98,11 +97,21 @@ class ProductDetailView(DetailView):
         return context
 
 
-class Pruduct:
-    pass
-
-
 class ProductListView(ListView):
+    """
+    View for displaying a list of products with pagination, category filtering,
+    search, and sorting features.
+
+    :ivar model: The model associated with the view.
+    :type model: Type[ModelBase]
+    :ivar template_name: The template used to render the page.
+    :type template_name: str
+    :ivar paginate_by: Number of products to display per page.
+    :type paginate_by: int
+    :ivar allow_empty: Indicates whether an empty list is allowed.
+    :type allow_empty: bool
+    """
+
     model = Product
     template_name = "products/home.html"
     paginate_by = 12
