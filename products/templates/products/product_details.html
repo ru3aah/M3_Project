@@ -15,7 +15,7 @@
                          alt="{{ product.name }}"
                          class="product-image">
                 {% else %}
-                    <<img src="{% static 'img/products/default-product.jpg' %}"
+                    <img src="{% static 'img/products/default-product.jpg' %}"
                          alt="{{ product.name }}"
                          class="product-image">
                 {% endif %}
@@ -56,14 +56,11 @@
                 </div>
                 <div class="accordion-content">
                     <ul>
-                        <li><strong>Origin:</strong> United Kingdom</li>
-                        <li><strong>Type:</strong> Base Malt</li>
-                        <li><strong>Color (°L):</strong> 2.5 - 4.0 °L</li>
-                        <li><strong>Moisture:</strong> 4.0% max</li>
-                        <li><strong>Protein:</strong> 9.5% - 10.5%</li>
-                        <li><strong>Diastatic Power:</strong> ≈ 120 °L</li>
-                        <li><strong>Usage:</strong> Up to 100% of the grist</li>
-                        <li><strong>Recommended Beer Styles:</strong> English Pale Ale, ESB, Bitter, Porter, Stout, Mild Ale</li>
+                        <li><strong>Origin:</strong> {{ product.origin|default:"Not specified" }}</li>
+                        <li><strong>Type:</strong> {{ product.product_type|default:"Not specified" }}</li>
+                        <li><strong>Category:</strong> {{ product.category.name|default:"Not specified" }}</li>
+                        <li><strong>Unit:</strong> {{ product.unit_measure|default:"Not specified" }}</li>
+                        <li><strong>Description:</strong> {{ product.description|default:"No description available" }}</li>
                     </ul>
                 </div>
             </div>
@@ -89,16 +86,21 @@
                             <p class="review-text">{{ review.comment }}</p>
                         </div>
                         <div class="review-author">
-                            <img src="{{review.user.image.url}}" alt="User
-                            avatar"
-                                 class="author-avatar">
+                            {% if review.user.image %}
+                                <img src="{{ review.user.image.url }}" alt="User avatar" class="author-avatar">
+                            {% else %}
+                                <div class="author-avatar-placeholder">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                            {% endif %}
                             <span class="author-name">
-                                {{ review.user.username }} @
-                                {{ review.updated_at }}</span>
+                                {{ review.user.username }} - 
+                                {{ review.updated_at|date:"M d, Y" }}
+                            </span>
                         </div>
                     </div>
                 {% empty %}
-                    <p> No reviews yet</p>
+                    <p>No reviews yet. Be the first to leave a review!</p>
                 {% endfor %}
             </div>
         </section>

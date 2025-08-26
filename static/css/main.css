@@ -839,14 +839,21 @@ footer {
 
 /* User Actions (for authenticated users) */
 .header__user-actions {
-    width: 192px;
+    width: 300px;
     display: flex !important;
     align-items: center;
     justify-content: flex-end;
-    gap: 16px;
+    gap: 24px;
 }
 
-.user-icon, .cart-icon {
+.user-account-section, .cart-section, .logout-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.user-icon, .cart-icon, .logout-icon {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -856,12 +863,63 @@ footer {
     transition: background-color 0.2s ease;
     cursor: pointer;
     color: var(--black-main);
-    font-size: 20px;
+    font-size: 18px;
+    overflow: hidden;
+    border: none;
+    background: transparent;
 }
 
-.user-icon:hover, .cart-icon:hover {
+.user-icon:hover, .cart-icon:hover, .logout-icon:hover {
     background-color: var(--background-default);
     color: var(--green);
+}
+
+.user-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--border-default);
+    transition: border-color 0.2s ease;
+}
+
+.user-icon:hover .user-avatar {
+    border-color: var(--green);
+}
+
+/* When there's no image, show background on hover */
+.user-icon:hover:not(:has(.user-avatar)) {
+    background-color: var(--background-default);
+    color: var(--green);
+}
+
+.user-label, .cart-label, .logout-label {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--grey-text);
+    text-align: center;
+    white-space: nowrap;
+    line-height: 1;
+}
+
+.user-icon:hover + .user-label,
+.cart-icon:hover + .cart-label,
+.logout-icon:hover + .logout-label {
+    color: var(--green);
+}
+
+/* Logout form styling */
+.logout-form {
+    margin: 0;
+    padding: 0;
+}
+
+.logout-section {
+    position: relative;
+}
+
+.logout-icon {
+    font-family: 'Font Awesome 6 Free';
 }
 
 .button--logout {
@@ -870,29 +928,6 @@ footer {
     color: var(--black-main);
     padding: 8px 16px;
 }
-
-/*
-========================================
-    Logic for Hiding/Showing Auth Blocks
-========================================
-*/
-
-/* Remove the problematic CSS logic at the bottom */
-/* Comment out or delete these lines in your CSS:
-body:not(.user-logged-in) .header__user-actions {
-    display: none;
-}
-body:not(.user-logged-in) .header__auth-buttons {
-    display: flex;
-}
-
-body.user-logged-in .header__auth-buttons {
-    display: none;
-}
-body.user-logged-in .header__user-actions {
-    display: flex;
-}
-*/
 
 
 /*
@@ -1145,31 +1180,5 @@ body.user-logged-in .header__user-actions {
 */
 .cart-controls {
     width: 304px;
-    height: 40px;
-}
-
-.is-hidden {
-    display: none !important;
-}
-
-.quantity-counter {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-    height: 100%;
-    background-color: var(--background-default);
-    border: 1px solid var(--border-default);
-    border-radius: 8px;
-    padding: 0 12px;
-}
-
-.quantity-btn {
-    background-color: transparent;
-    border: none;
-    cursor: pointer;
-    width: 24px;
-    height: 24px;
-    display: flex;
-    justify-content: center
+    height: 40px
 }

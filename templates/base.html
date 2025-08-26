@@ -52,7 +52,11 @@
         <div class="header__user-actions">
             <div class="user-account-section">
                 <a href="{% url 'users:account' %}" class="user-icon" aria-label="My Account">
-                    <i class="fas fa-user"></i>
+                    {% if user.image %}
+                        <img src="{{ user.image.url }}" alt="{{ user.username }}" class="user-avatar">
+                    {% else %}
+                        <i class="fas fa-user"></i>
+                    {% endif %}
                 </a>
                 <span class="user-label">{{ user.username }}</span>
             </div>
@@ -62,12 +66,25 @@
                 </a>
                 <span class="cart-label">Cart</span>
             </div>
+            <div class="logout-section">
+                <form method="post" action="{% url 'users:logout' %}"
+                      class="logout-form">
+                    {% csrf_token %}
+                    <button type="submit"
+                            class="logout-icon" aria-label="Logout">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </button>
+                </form>
+                <span class="logout-label">Logout</span>
+            </div>
         </div>
         {% else %}
         <!-- Block for unauthorized user -->
         <div class="header__auth-buttons">
-            <a href="{% url 'users:login' %}" class="button button--secondary">Sign in</a>
-            <a href="{% url 'users:register' %}" class="button button--primary">Register</a>
+            <a href="{% url 'users:login' %}"
+               class="button button--secondary">Sign in</a>
+            <a href="{% url 'users:register' %}"
+               class="button button--primary">Register</a>
         </div>
         {% endif %}
     </div>
