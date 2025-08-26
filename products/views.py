@@ -39,7 +39,12 @@ class ProductDetailView(DetailView):
                 "reviews",
                 queryset=ProductReview.objects.order_by("-created_at"),
                 to_attr="recent_reviews",
-            )
+            ),
+            models.Prefetch(
+                "tech_specs",
+                queryset=ProductTechSpec.objects.all(),
+                to_attr="product_tech_specs",
+            ),
         )
     )
     template_name = "products/product_details.html"
@@ -47,6 +52,49 @@ class ProductDetailView(DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["reviews"] = self.object.recent_reviews[:3]
+
+        # Process tech specs to handle different value types properly
+        processed_specs = []
+        for spec in self.object.product_tech_specs:
+            if (
+                spec.tech_spec
+                and "name" in spec.tech_spec
+                and "value" in spec.tech_spec
+            ):
+                spec_name = spec.tech_spec.get("name", "")
+                spec_value = spec.tech_spec.get("value", "")
+
+                if spec_name and spec_value:
+                    # Handle different value types
+                    if isinstance(spec_value, list):
+                        # If it's a list, join the items
+                        if all(
+                            isinstance(item, dict)
+                            and "name" in item
+                            and "value" in item
+                            for item in spec_value
+                        ):
+                            # List of objects with name/value pairs
+                            formatted_value = ", ".join(
+                                [
+                                    f"{item['name']}: {item['value']}"
+                                    for item in spec_value
+                                ]
+                            )
+                        else:
+                            # List of simple values
+                            formatted_value = ", ".join(
+                                [str(item) for item in spec_value]
+                            )
+                    else:
+                        # It's a string or other simple value
+                        formatted_value = str(spec_value)
+
+                    processed_specs.append(
+                        {"name": spec_name, "value": formatted_value}
+                    )
+
+        context["tech_specs"] = processed_specs
         return context
 
 

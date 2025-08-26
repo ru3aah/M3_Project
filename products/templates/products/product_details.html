@@ -23,6 +23,7 @@
             <div class="product-info-column">
                 <div class="product-title-price">
                     <h1 class="product-name">{{ product.name }}</h1>
+                    <h3 class="product-brand">Type: {{ product.category }}</h3>
                     <div class="price-section">
                         <span class="price-tag">per
                             {{ product.unit_measure }}</span>
@@ -55,19 +56,29 @@
 
         <!-- Technical Specifications Accordion -->
         <section class="accordion-section">
-            <div class="accordion-item">
-                <div class="accordion-title">
+            <div class="accordion-item" id="tech-specs-accordion">
+                <div class="accordion-title"
+                     onclick="toggleAccordion('tech-specs-accordion')">
                     <h3>Technical Specifications</h3>
                     <i class="fa-solid fa-chevron-down accordion-icon"></i>
                 </div>
                 <div class="accordion-content">
-                    <ul>
-                        <li><strong>Origin:</strong> {{ product.origin|default:"Not specified" }}</li>
-                        <li><strong>Type:</strong> {{ product.product_type|default:"Not specified" }}</li>
-                        <li><strong>Category:</strong> {{ product.category.name|default:"Not specified" }}</li>
-                        <li><strong>Unit:</strong> {{ product.unit_measure|default:"Not specified" }}</li>
-                        <li><strong>Description:</strong> {{ product.description|default:"No description available" }}</li>
-                    </ul>
+                    {% if tech_specs %}
+                        <ul class="tech-specs-list">
+                            {% for spec in tech_specs %}
+                                <li class="tech-spec-item">
+                                    <strong>{{ spec.name }}:</strong>
+                                    <span class="tech-spec-value">
+                                        {{ spec.value }}
+                                    </span>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <div class="no-tech-specs">
+                            <p><em>No technical specifications available for this product.</em></p>
+                        </div>
+                    {% endif %}
                 </div>
             </div>
         </section>
@@ -112,4 +123,11 @@
         </section>
     </div>
     </main>
+
+    <script>
+        function toggleAccordion(accordionId) {
+            const accordion = document.getElementById(accordionId);
+            accordion.classList.toggle('active');
+        }
+    </script>
 {% endblock %}
