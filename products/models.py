@@ -37,39 +37,22 @@ class Category(JournalizedModel):
 
 class Product(JournalizedModel):
     """
-    Represents a product in the inventory system.
+    Represents a product available in the inventory system.
 
-    This class is used to define the structure and behavior of a product entity
-    in the inventory management context. It includes fields such as name, price,
-    category, and stock, among others, and provides essential methods like string
-    representation, URL generation, and slug generation upon saving.
+    This class is used to define and manage the details of a product in the system.
+     It inherits from the `JournalizedModel` to track changes
+     and support auditing of the product details.
 
     :ivar name: The name of the product.
-    :type name: str
-    :ivar slug: A unique slug identifier for the product.
-    :type slug: str
-    :ivar category: The category associated with the product.
-    :type category: Category
-    :ivar description: A detailed description of the product with a maximum of
-        1000 characters.
-        >>The first sentence of the description to be less than 30 chars and
-        would be used as a short description for product card in the List
-        View being truncated by final comma.
-        >>Otherwise first 30 chars would be used with no regards to comma split.
-    :type description: str
-    :ivar price: The price of the product, encompassing up to 10 digits with
-        2 decimal places.
-    :type price: decimal.Decimal
-    :ivar currency: The currency code for the product price (ISO 4217 format).
-    :type currency: str
-    :ivar stock: The quantity of the product currently available in stock.
-    :type stock: int
-    :ivar unit_measure: The unit of measure for the product, defaulting to "kg".
-    :type unit_measure: str
-    :ivar image: An optional image associated with the product.
-    :type image: models.ImageField
-    :ivar available: Indicates whether the product is available (defaults to True).
-    :type available: bool
+    :ivar slug: A unique slug generated for the product, used for URLs.
+    :ivar category: The category to which the product belongs.
+    :ivar description: Detailed description of the product.
+    :ivar price: The price of the product.
+    :ivar currency: The currency in which the product price is denoted.
+    :ivar stock: The total available stock for the product.
+    :ivar unit_measure: The unit in which the product is measured (e.g., kg, lb).
+    :ivar image: An optional image of the product.
+    :ivar available: A boolean indicating whether the product is available for sale.
     """
 
     name = models.CharField(max_length=100)
@@ -99,6 +82,24 @@ class Product(JournalizedModel):
 
 
 class ProductReview(JournalizedModel):
+    """
+    Represents a product review within the system.
+
+    This class is used to define, manage, and interact with reviews provided
+    by users for specific products. Reviews include information such as
+    the user who provided the review, the product being reviewed, the rating
+    assigned, an optional title, and a detailed comment. This can help in
+    analyzing user feedback and improving products based on customer insights.
+
+    :ivar product: The product to which this review belongs.
+    :ivar user: The user who provided this review.
+    :ivar rating: The numerical rating provided for the product, within a
+        valid range of 1 to 5.
+    :ivar title: An optional short title for the review, defined by the user.
+    :ivar comment: A detailed comment providing further information or feedback
+        about the product.
+    """
+
     product = models.ForeignKey(
         Product, on_delete=models.CASCADE, related_name="reviews"
     )
