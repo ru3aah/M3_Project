@@ -37,7 +37,7 @@ class ProductDetailView(DetailView):
             models.Prefetch(
                 "reviews",
                 queryset=ProductReview.objects.order_by("-created_at"),
-                to_attr="recent_reviews",
+                to_attr="all_reviews",
             ),
             models.Prefetch(
                 "tech_specs",
@@ -50,7 +50,25 @@ class ProductDetailView(DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["reviews"] = self.object.recent_reviews[:3]
+
+        # Get all reviews for calculation and display
+        all_reviews = self.object.all_reviews
+
+        # Display only the latest 3 reviews
+        context["reviews"] = all_reviews[:3]
+
+        # Calculate average rating from ALL reviews (not just the displayed 3)
+        if all_reviews and len(all_reviews) > 0:
+            total_rating = sum(review.rating for review in all_reviews)
+            average_rating = round(total_rating / len(all_reviews), 1)
+            review_count = len(all_reviews)
+        else:
+            average_rating = None
+            review_count = 0
+
+        # Add rating data to context separately
+        context["average_rating"] = average_rating
+        context["review_count"] = review_count
 
         # Process tech specs to handle different value types properly
         processed_specs = []
