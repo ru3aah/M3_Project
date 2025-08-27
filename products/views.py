@@ -8,6 +8,7 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from config.settings import PRODUCTS_QUERY_MAP
 from products.models import Product, ProductReview, Category, ProductTechSpec
 from django.db import models
+from cart.services import CartService  # Add this import
 
 
 class ProductDetailView(DetailView):
@@ -50,6 +51,24 @@ class ProductDetailView(DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+
+        # Get cart service and check if this product is in cart
+        cart_service = CartService(self.request)
+        product_id = str(self.object.id)
+
+        # Get the quantity of this product in the cart
+        product_in_cart = 0
+        if product_id in cart_service.cart:
+            product_in_cart = cart_service.cart[product_id]["quantity"]
+
+        context["product_in_cart"] = product_in_cart
+
+        # Calculate available stock (total stock - quantity in cart)
+        available_stock = max(0, self.object.stock - product_in_cart)
+        context["available_stock"] = available_stock
+
+        # Also pass the original stock for reference if needed
+        context["original_stock"] = self.object.stock
 
         # Get all reviews for calculation and display
         all_reviews = self.object.all_reviews
@@ -115,6 +134,7 @@ class ProductDetailView(DetailView):
         return context
 
 
+# Rest of your views remain the same...
 class ProductListView(ListView):
     """
     View for displaying a list of products with pagination, category filtering,

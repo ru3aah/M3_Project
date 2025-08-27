@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+
+{% load text_filters %}
+{% load static %}
+
+{% block title %}Cart | Hop & Barley{% endblock %}
+{% block content %}
+
+<!-- Cart URLs for JavaScript -->
+<div data-update-cart-url="{% url 'cart:update_cart' %}"
+     data-remove-cart-url="{% url 'cart:remove_from_cart' %}"
+     style="display: none;" 
+     id="cart-urls"></div>
+
+<!-- Main Content -->
+<main class="cart-page-wrapper">
+  <div class="cart-container">
+    <h1 class="cart-title">Shopping Cart</h1>
+
+    {% if cart_items %}
+        <div class="cart-items-list" id="cart-items-list">
+            {% for item in cart_items %}
+                <div class="cart-item" data-product-id="{{ item.product.id }}" data-price="{{ item.price }}">
+                    {% if item.product.image %}
+                        <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" class="cart-item__image">
+                    {% else %}
+                        <img src="{% static 'img/products/default-product.jpg' %}" alt="{{ item.product.name }}" class="cart-item__image">
+                    {% endif %}
+                    <div class="cart-item__body">
+                        <div class="cart-item__details">
+                            <h2 class="cart-item__name">{{ item.product.name }}</h2>
+                            <div class="cart-item__price-info">
+                                <p class="cart-item__price" data-item-total-price>
+                                    {{ item.product.currency }}{{ item.total|floatformat:2 }}
+                                </p>
+                                <span class="cart-item__price-tag">per {{ item.product.unit_measure }}</span>
+                                <span class="cart-item__unit-price">{{ item.product.currency }}{{ item.price|floatformat:2 }} each</span>
+                            </div>
+                        </div>
+                        <div class="cart-item__actions">
+                            <div class="cart-item__quantity-selector">
+                                <button class="quantity-btn-cart" data-action="decrease" data-product-id="{{ item.product.id }}">
+                                    <i class="fa-solid fa-minus"></i>
+                                </button>
+                                <span class="quantity-value-cart">{{ item.quantity }}</span>
+                                <button class="quantity-btn-cart" data-action="increase" data-product-id="{{ item.product.id }}" 
+                                        {% if item.quantity >= item.product.stock %}disabled{% endif %}>
+                                    <i class="fa-solid fa-plus"></i>
+                                </button>
+                            </div>
+                            <button class="button--remove" data-action="remove" data-product-id="{{ item.product.id }}">
+                                Remove <i class="fa-solid fa-xmark"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <div class="cart-summary">
+            <div class="cart-summary__total">
+                <p>Total ({{ cart_count }} item{{ cart_count|pluralize }})</p>
+                <p id="cart-total-price">${{ cart_total|floatformat:2 }}</p>
+            </div>
+            <a href="#" class="button button--primary button--checkout">Proceed to Checkout</a>
+        </div>
+    {% else %}
+        <div class="empty-cart">
+            <div class="empty-cart__icon">
+                <i class="fa-solid fa-shopping-cart"></i>
+            </div>
+            <h2 class="empty-cart__title">Your cart is empty</h2>
+            <p class="empty-cart__message">Add some products to get started!</p>
+            <a href="{% url 'products:product-list' %}" class="button button--primary">
+                Continue Shopping
+            </a>
+        </div>
+    {% endif %}
+
+    <!-- Success/Error Messages -->
+    <div id="cart-messages" class="cart-messages">
+        <div id="success-message" class="message message--success">
+            <i class="fa-solid fa-check-circle"></i>
+            <span class="message-text"></span>
+        </div>
+        <div id="error-message" class="message message--error">
+            <i class="fa-solid fa-exclamation-triangle"></i>
+            <span class="message-text"></span>
+        </div>
+    </div>
+  </div>
+</main>
+
+{% endblock %}

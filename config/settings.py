@@ -25,6 +25,7 @@ INSTALLED_APPS = [
     "resources",
     "community",
     "contacts",
+    "cart",
 ]
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -95,6 +96,8 @@ SUCCESS_REDIRECT_URL = "/"
 LOGIN_URL = "/users/login/"
 LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "/users/login/"
+
+CART_SESSION_ID = "cart"
 
 PRODUCTS_QUERY_MAP = {
     "rating": "-rating",

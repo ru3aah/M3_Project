@@ -4,6 +4,16 @@
 {% block title %}{{ product.name}} | Hop & Barley{% endblock %}
 
 {% block content %}
+    <!-- Hidden product data for JavaScript -->
+    <div data-product-id="{{ product.id }}" 
+         data-product-stock="{{ product.stock }}" 
+         data-product-cart-quantity="{{ product_in_cart|default:0 }}"
+         data-add-to-cart-url="{% url 'cart:add_to_cart' %}"
+         data-update-cart-url="{% url 'cart:update_cart' %}"
+         data-remove-cart-url="{% url 'cart:remove_from_cart' %}"
+         style="display: none;" 
+         id="product-data"></div>
+    
     <!-- Main Content -->
     <main class="page-product">
     <div class="container">
@@ -46,31 +56,68 @@
                         </div>
                     {% endif %}
                     <div class="price-section">
-                        <span class="price-tag">per
-                            {{ product.unit_measure }}</span>
-                        <p class="product-price">{{ product.currency }}
-                            {{ product.price }}</p>
+                        <span class="price-tag">per {{ product.unit_measure }}</span>
+                        <p class="product-price">{{ product.currency }} {{ product.price }}</p>
+                    </div>
+                    <!-- Stock information -->
+                    <div class="stock-info"> 
+                        {% if product.stock > 0 %}
+                            <span class="stock-available">
+                                {{ product.stock }} available
+                                {% if product_in_cart > 0 %}
+                                    ({{ product_in_cart }} in cart)
+                                {% endif %}
+                            </span>
+                        {% elif product_in_cart > 0 %}
+                            <span class="stock-out">All available items in cart</span>
+                        {% else %}
+                            <span class="stock-out">Out of stock</span>
+                        {% endif %}
                     </div>
                 </div>
                 <div class="product-description">
                     <p>{{ product.description|linebreaks }}</p>
                 </div>
                 <div class="cart-controls">
-                    <button class="button button--primary add-to-cart-button"
-                            id="add-to-cart-btn">
-                        <i class="fa-solid fa-cart-shopping"></i>
-                        <span>Add to Cart</span>
-                    </button>
-                    <div class="quantity-counter is-hidden"
-                         id="quantity-counter">
-                        <button class="quantity-btn" data-action="decrease"
-                                aria-label="Decrease quantity"><i
-                                class="fa-solid fa-minus"></i></button>
-                        <span class="quantity-value">1 in cart</span>
-                        <button class="quantity-btn" data-action="increase"
-                                aria-label="Increase quantity"><i
-                                class="fa-solid fa-plus"></i></button>
-                    </div>
+                    {% if product.stock > 0 %}
+                        <!-- Show "Add to Cart" button only if product is not in cart -->
+                        {% if not product_in_cart or product_in_cart == 0 %}
+                            <button class="button button--primary add-to-cart-button"
+                                    id="add-to-cart-btn">
+                                <i class="fa-solid fa-cart-shopping"></i>
+                                <span>Add to Cart</span>
+                            </button>
+                        {% else %}
+                            <button class="button button--primary add-to-cart-button is-added"
+                                    id="add-to-cart-btn">
+                                <i class="fa-solid fa-check"></i>
+                                <span>Added to Cart</span>
+                            </button>
+                        {% endif %}
+                        
+                        <!-- Show quantity counter if product is already in cart -->
+                        <div class="quantity-counter{% if not product_in_cart or product_in_cart == 0 %} is-hidden{% endif %}" id="quantity-counter">
+                            <button class="quantity-btn" data-action="decrease"
+                                    aria-label="Decrease quantity">
+                                <i class="fa-solid fa-minus"></i>
+                            </button>
+                            <input type="number" 
+                                   class="quantity-input" 
+                                   value="{{ product_in_cart|default:0 }}" 
+                                   min="0" 
+                                   max="{{ product.stock }}"
+                                   id="quantity-input">
+                            <button class="quantity-btn" data-action="increase"
+                                    aria-label="Increase quantity">
+                                <i class="fa-solid fa-plus"></i>
+                            </button>
+                        </div>
+                    {% else %}
+                        <button class="button button--secondary" disabled>
+                            <i class="fa-solid fa-ban"></i>
+                            <span>Out of Stock</span>
+                        </button>
+                    {% endif %}
                 </div>
             </div>
         </section>
@@ -145,11 +192,4 @@
         </section>
     </div>
     </main>
-
-    <script>
-        function toggleAccordion(accordionId) {
-            const accordion = document.getElementById(accordionId);
-            accordion.classList.toggle('active');
-        }
-    </script>
 {% endblock %}

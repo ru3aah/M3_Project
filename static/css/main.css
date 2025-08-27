@@ -38,7 +38,7 @@ a {
     color: inherit;
 }
 
-p, h1, h2, h3, h4, h5, h6 {
+p, h1, h2, h3, h4, h5, h5 {
     margin: 0;
 }
 
@@ -837,89 +837,26 @@ footer {
 }
 
 
-/* User Actions (for authenticated users) */
+/*
+========================================
+    Header User Actions (Logged-in state)
+========================================
+*/
 .header__user-actions {
-    width: 300px;
-    display: flex !important;
+    display: none;
     align-items: center;
-    justify-content: flex-end;
     gap: 24px;
 }
 
-.user-account-section, .cart-section, .logout-section {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 4px;
+.user-icon, .cart-icon {
+    display: block;
+    width: 38px;
+    height: 38px;
 }
 
-.user-icon, .cart-icon, .logout-icon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 40px;
-    height: 40px;
-    border-radius: 8px;
-    transition: background-color 0.2s ease;
-    cursor: pointer;
-    color: var(--black-main);
-    font-size: 18px;
-    overflow: hidden;
-    border: none;
-    background: transparent;
-}
-
-.user-icon:hover, .cart-icon:hover, .logout-icon:hover {
-    background-color: var(--background-default);
-    color: var(--green);
-}
-
-.user-avatar {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 2px solid var(--border-default);
-    transition: border-color 0.2s ease;
-}
-
-.user-icon:hover .user-avatar {
-    border-color: var(--green);
-}
-
-/* When there's no image, show background on hover */
-.user-icon:hover:not(:has(.user-avatar)) {
-    background-color: var(--background-default);
-    color: var(--green);
-}
-
-.user-label, .cart-label, .logout-label {
-    font-size: 12px;
-    font-weight: 500;
-    color: var(--grey-text);
-    text-align: center;
-    white-space: nowrap;
-    line-height: 1;
-}
-
-.user-icon:hover + .user-label,
-.cart-icon:hover + .cart-label,
-.logout-icon:hover + .logout-label {
-    color: var(--green);
-}
-
-/* Logout form styling */
-.logout-form {
-    margin: 0;
-    padding: 0;
-}
-
-.logout-section {
-    position: relative;
-}
-
-.logout-icon {
-    font-family: 'Font Awesome 6 Free';
+.user-icon img, .cart-icon img {
+    width: 100%;
+    height: 100%;
 }
 
 .button--logout {
@@ -927,6 +864,26 @@ footer {
     border: 1px solid var(--border-dark-grey);
     color: var(--black-main);
     padding: 8px 16px;
+}
+
+/*
+========================================
+    Logic for Hiding/Showing Auth Blocks
+========================================
+*/
+
+body:not(.user-logged-in) .header__user-actions {
+    display: none;
+}
+body:not(.user-logged-in) .header__auth-buttons {
+    display: flex;
+}
+
+body.user-logged-in .header__auth-buttons {
+    display: none;
+}
+body.user-logged-in .header__user-actions {
+    display: flex;
 }
 
 
@@ -1097,6 +1054,121 @@ footer {
     transform: rotate(180deg);
 }
 
+/*
+========================================
+    Cart Controls & Quantity Counter
+========================================
+*/
+.cart-controls {
+    width: 304px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    align-items: center; /* Center both button and counter */
+}
+
+/* Quantity counter - visible when product is in cart */
+.quantity-counter {
+    display: flex;
+    align-items: center;
+    border: 1px solid var(--border-default);
+    border-radius: 8px;
+    background: white;
+    overflow: hidden;
+    width: 304px; /* Same width as button */
+    height: 40px; /* Same height as button */
+}
+
+/* Hide counter only when it has the is-hidden class */
+.quantity-counter.is-hidden {
+    display: none;
+}
+
+.quantity-btn {
+    background: #f8f9fa;
+    border: none;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 14px;
+    color: #666;
+    transition: background-color 0.2s ease;
+    flex-shrink: 0;
+}
+
+.quantity-btn:hover {
+    background: #e9ecef;
+    color: #333;
+}
+
+.quantity-btn:first-child {
+    border-right: 1px solid var(--border-default);
+}
+
+.quantity-btn:last-child {
+    border-left: 1px solid var(--border-default);
+}
+
+/* Super aggressive spinner removal */
+.quantity-input {
+    flex: 1;
+    height: 40px;
+    border: none;
+    text-align: center;
+    font-size: 16px;
+    font-weight: 500;
+    background: white;
+    outline: none;
+    color: var(--black-main);
+
+    /* Remove spinner arrows - all methods */
+    -webkit-appearance: none !important;
+    -moz-appearance: textfield !important;
+    appearance: none !important;
+}
+
+/* Every possible selector for webkit spinners */
+.quantity-input::-webkit-outer-spin-button,
+.quantity-input::-webkit-inner-spin-button,
+input.quantity-input::-webkit-outer-spin-button,
+input.quantity-input::-webkit-inner-spin-button,
+input[type="number"].quantity-input::-webkit-outer-spin-button,
+input[type="number"].quantity-input::-webkit-inner-spin-button {
+    -webkit-appearance: none !important;
+    appearance: none !important;
+    margin: 0 !important;
+    display: none !important;
+    height: 0 !important;
+    width: 0 !important;
+}
+
+/* Firefox - every possible selector */
+input[type="number"].quantity-input,
+.quantity-input[type="number"],
+input.quantity-input[type="number"] {
+    -moz-appearance: textfield !important;
+}
+
+/* Stock info styling */
+.stock-info {
+    margin-top: 8px;
+}
+
+.stock-available {
+    color: var(--green);
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.stock-out {
+    color: #dc3545;
+    font-size: 14px;
+    font-weight: 500;
+}
+
 /* --- Reviews Section --- */
 .reviews-section {
     display: flex;
@@ -1166,6 +1238,19 @@ footer {
     object-fit: cover;
 }
 
+.author-avatar-placeholder {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: var(--background-default);
+    border: 1px solid var(--border-default);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--grey-text);
+    font-size: 18px;
+}
+
 .author-name {
     font-size: 16px;
     font-weight: 600;
@@ -1180,5 +1265,88 @@ footer {
 */
 .cart-controls {
     width: 304px;
-    height: 40px
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    align-items: center; /* Center both button and counter */
+}
+
+/* Quantity counter - visible when product is in cart */
+.quantity-counter {
+    display: flex;
+    align-items: center;
+    border: 1px solid var(--border-default);
+    border-radius: 8px;
+    background: white;
+    overflow: hidden;
+    width: 304px; /* Same width as button */
+    height: 40px; /* Same height as button */
+}
+
+/* Hide counter only when it has the is-hidden class */
+.quantity-counter.is-hidden {
+    display: none;
+}
+
+.quantity-btn {
+    background: #f8f9fa;
+    border: none;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 14px;
+    color: #666;
+    transition: background-color 0.2s ease;
+    flex-shrink: 0;
+}
+
+.quantity-input {
+    flex: 1;
+    height: 40px;
+    border: none;
+    text-align: center;
+    font-size: 16px;
+    font-weight: 500;
+    background: white;
+    outline: none;
+    color: var(--black-main);
+
+    /* Remove spinner arrows completely - WebKit browsers */
+    -webkit-appearance: none;
+    appearance: none;
+
+    /* Remove spinner arrows - Firefox */
+    -moz-appearance: textfield;
+}
+
+/* Remove webkit spinner arrows for all browsers - more specific selectors */
+.quantity-input::-webkit-outer-spin-button,
+.quantity-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    appearance: none;
+    margin: 0;
+    display: none !important;
+}
+
+/* Firefox specific - remove spinner */
+input[type="number"].quantity-input {
+    -moz-appearance: textfield;
+}
+
+/* Additional fallback for stubborn browsers */
+input.quantity-input[type="number"] {
+    -webkit-appearance: none;
+    -moz-appearance: textfield;
+    appearance: none;
+}
+
+input.quantity-input[type="number"]::-webkit-outer-spin-button,
+input.quantity-input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    appearance: none;
+    margin: 0;
+    display: none !important;
 }
