@@ -1,3 +1,5 @@
+from tokenize import endpats
+
 from products.models import Product
 
 
@@ -16,15 +18,35 @@ class Cart:
         product = Product.objects.get(id=product_id)
         if product_id not in self.cart:
             self.cart[product_id] = {"quantity": 0, "price": product.price}
+        self.change_qty(product_id, self.cart[product_id]["quantity"] + qty_diff)
 
     def remove(self, product_id: int, qty_diff: int = -1):
-        pass
-
-    def clear(self):
-        pass
+        if product_id in self.cart:
+            self.change_qty(product_id, self.cart[product_id]["quantity"] + qty_diff)
 
     def change_qty(self, product_id: int, new_qty: int):
-        pass
+        product = Product.objects.get(id=product_id)
+        if product_id in self.cart:
+            qty_diff = new_qty - self.cart[product_id]["quantity"]
+            if qty_diff > product.stock:
+                self.cart[product_id]["quantity"] = (
+                    self.cart[product_id]["quantity"] + product.stock
+                )
+                product.stock = 0
+            else:
+                if new_qty <= 0:
+                    product.stock = product.stock + self.cart[product_id]["quantity"]
+                    del self.cart[product_id]
+                else:
+                    self.cart[product_id]["quantity"] = new_qty
+                    product.stock = product.stock - qty_diff
+            self.save()
+
+    def clear(self):
+        self.session.pop(self.SESSION_KEY)
+
+    def save(self):
+        self.session.modified = True
 
     def __len__(self):
         return sum(item["quantity"] for item in self.cart.values())
