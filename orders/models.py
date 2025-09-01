@@ -26,9 +26,24 @@ class Order(JournalizedModel):
     total_price = models.DecimalField(max_digits=10, decimal_places=2)
     shipping_address = models.TextField(max_length=500)
 
+    def __str__(self):
+        return f"Order {self.id}"
+
+    class Meta:
+        verbose_name = "Order"
+        verbose_name_plural = "Orders"
+        ordering = ["-created_at"]
+
 
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="items")
     product = models.ForeignKey("products.Product", on_delete=models.CASCADE)
     price = models.DecimalField(max_digits=10, decimal_places=2)
     quantity = models.PositiveIntegerField()
+
+    def __str__(self):
+        return f"{self.id}: {self.quantity} x {self.product.name}"
+
+    class Meta:
+        verbose_name = "Order Item"
+        verbose_name_plural = "Order Items"
