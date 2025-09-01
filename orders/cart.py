@@ -52,6 +52,10 @@ class Cart:
         return sum(item["quantity"] for item in self.cart.values())
 
     def __iter__(self):
-        product_ids = self.cart.keys()
-        products = Product.objects.filter(id__in=product_ids)
-        cart = self.cart.copy()
+        for product_id, product_data in self.cart.items():
+            to_return = {}
+            product = Product.objects.get(id=product_id)
+            to_return["product"] = product
+            to_return["data"] = product_data
+            to_return["total_price"] = product_data["price"] * product_data["quantity"]
+            yield product
