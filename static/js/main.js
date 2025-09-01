@@ -1,4 +1,4 @@
-// 3. Filter Logic (Keywords and Checkboxes)
+// Filter Logic (Keywords and Checkboxes)
 const keywordsList = document.querySelector('.keywords-list');
 
 function displayFilterTags() {
@@ -91,7 +91,7 @@ function restoreSearchInput() {
     }
 }
 
-// Function to restore active sort button from URL
+// Function to restore an active sort button from URL
 function restoreSortState() {
     const urlParams = new URLSearchParams(window.location.search);
     const sort = urlParams.get('sort') || 'new';
@@ -304,12 +304,8 @@ if (removeFiltersButton) {
         removeAllFilters();
     });
 }
-// Add these styles to your main.css for the new components
-// (Continue with existing main.js code and add the following cart functionality)
 
-// ========================================
 // CART FUNCTIONALITY
-// ========================================
 
 // Product Detail Page Cart Functionality
 function initProductDetailCart() {
@@ -326,7 +322,7 @@ function initProductDetailCart() {
     const decreaseBtn = quantityCounter.querySelector('[data-action="decrease"]');
     const increaseBtn = quantityCounter.querySelector('[data-action="increase"]');
     
-    // Get product data from template - this is the actual cart quantity from Django
+    // Get product data from template - the actual cart quantity from Django
     const rawQuantity = productData.dataset.productCartQuantity;
     let currentQuantity = parseInt(rawQuantity) || 0;
     
@@ -345,11 +341,8 @@ function initProductDetailCart() {
     } else {
         quantityInput.value = 1; // Default for new additions
     }
-    
-    // Force initial UI state
+
     updateProductUI();
-    
-    // Rest of your existing code stays the same...
     
     // Add to cart / Update cart button click
     addToCartBtn.addEventListener('click', function() {
@@ -370,7 +363,7 @@ function initProductDetailCart() {
                 // User wants to remove the item
                 removeFromCart(productId, removeCartUrl);
             } else if (inputValue !== currentQuantity) {
-                // Only update if value has changed
+                // Only update if the value has changed
                 updateCart(productId, inputValue, updateCartUrl);
             } else {
                 showCartMessage('Quantity unchanged', 'info');
@@ -604,8 +597,6 @@ function initProductDetailCart() {
             // Product is in cart - show both counter and button (as "In Your Cart")
             addToCartBtn.style.display = 'flex';
             quantityCounter.style.display = 'flex';
-            // DON'T override the input value here - it should keep whatever the user entered
-            // Only set it if it's currently showing 0 or less
             if (parseInt(quantityInput.value) <= 0) {
                 quantityInput.value = currentQuantity;
             }
@@ -653,7 +644,6 @@ function initProductDetailCart() {
     }
 }
 
-// Cart Page Functionality (keeping the existing function)
 function initCartPage() {
     const cartItemsList = document.getElementById('cart-items-list');
     const cartUrls = document.getElementById('cart-urls');
