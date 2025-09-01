@@ -1,13 +1,12 @@
-from tokenize import endpats
-from unicodedata import category
-
 from django.db.models import Q
 from django.views.generic import DetailView, ListView, TemplateView
-from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.core.paginator import EmptyPage, PageNotAnInteger
 
 from config.settings import PRODUCTS_QUERY_MAP
 from products.models import Product, ProductReview, Category, ProductTechSpec
 from django.db import models
+
+from orders.cart import Cart
 
 
 class ProductDetailView(DetailView):
@@ -50,6 +49,7 @@ class ProductDetailView(DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        context["cart"] = Cart(self.request)
 
         # Get all reviews for calculation and display
         all_reviews = self.object.all_reviews
@@ -112,6 +112,7 @@ class ProductDetailView(DetailView):
                     )
 
         context["tech_specs"] = processed_specs
+
         return context
 
 
@@ -186,11 +187,11 @@ class ProductListView(ListView):
 
         try:
             page = paginator.page(page_number)
-            return (paginator, page, page.object_list, page.has_other_pages())
+            return paginator, page, page.object_list, page.has_other_pages()
         except (EmptyPage, PageNotAnInteger):
             # If page is out of range or not an integer, deliver first page
             page = paginator.page(1)
-            return (paginator, page, page.object_list, page.has_other_pages())
+            return paginator, page, page.object_list, page.has_other_pages()
 
 
 class GuidesRecipesView(TemplateView):

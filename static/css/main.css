@@ -224,6 +224,12 @@ header {
     color: var(--black-main);
 }
 
+
+.is-hidden {
+    display: none !important;
+}
+
+
 /* Ensure keywords-list can accommodate filter tags */
 .keywords-list {
     display: flex;
