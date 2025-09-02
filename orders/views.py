@@ -12,7 +12,7 @@ from .models import (
     Order,
     OrderItem,
     OrderStatus,
-)  # assumes these exist in orders.models
+)
 
 
 class CartDetail(TemplateView):
@@ -96,7 +96,6 @@ def checkout(request):
                     user=request.user,
                     status=OrderStatus.PENDING,
                     total_price=cart.get_total_price(),
-                    # Store full formatted address; you can combine city + address or keep both in model if you have both
                     shipping_address=f"{data['shipping_address']} (City: {data['city']})",
                 )
                 for line in cart:

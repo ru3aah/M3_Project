@@ -98,6 +98,8 @@ class Cart:
                 continue
             yield {
                 "product": product,
+                "price": float(data["price"]),
+                "quantity": int(data["quantity"]),
                 "data": data,
                 "total_price": float(data["quantity"]) * float(data["price"]),
             }

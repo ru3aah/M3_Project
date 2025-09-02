@@ -104,3 +104,15 @@ PRODUCTS_QUERY_MAP = {
     "price_desc": "-price",
     "new": "-created_at",
 }
+
+SESSION_ENGINE = "django.contrib.sessions.backends.db"
+SESSION_COOKIE_AGE = 30 * 60  # seconds
+SESSION_SAVE_EVERY_REQUEST = True
+
+IS_PRODUCTION = os.getenv("IS_PRODUCTION")
+
+if IS_PRODUCTION:
+    CSRF_COOKIE_SECURE = True
+    SESSION_COOKIE_SECURE = True
+    SESSION_COOKIE_HTTPONLY = True
+    SESSION_COOKIE_SAMESITE = "Lax"
