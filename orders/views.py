@@ -10,16 +10,23 @@ class CartDetail(TemplateView):
 def cart_order_add(request, product_id: int):
     cart = Cart(request)
     action = request.POST.get("action")
-    qty = request.POST.get("quantity")
+
     try:
-        if action in {"increase", "decrease"}:
-            cart.change_quantity(product_id, 1 if action == "increase" else -1)
-        elif qty is not None:
-            cart.change_quantity(product_id, int(qty))
+        if action == "increase":
+            cart.increase_quantity(product_id)
+        elif action == "decrease":
+            cart.decrease_quantity(product_id)
+        elif action == "set_quantity":
+            quantity = int(request.POST.get("quantity", 1))
+            cart.set_quantity(product_id, quantity)
         else:
-            cart.change_quantity(product_id, 1)
+            # No action parameter - this is the "Add to Cart" button
+            # Only add if not already in cart, otherwise do nothing
+            if product_id not in cart:
+                cart.add(product_id)
     except (TypeError, ValueError):
         pass
+
     next_url = request.GET.get("next")
     return redirect(next_url or "orders:cart_detail")
 

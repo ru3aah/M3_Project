@@ -59,40 +59,59 @@
                 </div>
 
             <!-- Cart Controls -->
-                <div class="cart-controls">
-                    <form action="{% url 'orders:cart_add' product.id %}?next={{ request.path }}" method="post">
-                        {% csrf_token %}
-                        <input type="hidden" name="quantity" value="1">
-                        <button type="submit"
-                                class="button button--primary add-to-cart-button{% if cart|in_cart:product %} is-hidden{% endif %}" id="add-to-cart-btn">
-                            <i class="fa-solid fa-cart-shopping"></i>
-                            <span>Add to Cart</span>
-                        </button>
-                        <div class="quantity-counter{% if not cart|in_cart:product %} is-hidden{% endif %}" id="quantity-counter">
-                            <button type="submit" class="quantity-btn"
-                                    name="action" value="decrease"
-                                    aria-label="Decrease quantity">
-                                <i class="fa-solid fa-minus"></i>
-                            </button>
-                            {% cart_quantity cart product as qty %}
-                            <span class="quantity-value">{{ qty }} in
-                                cart</span>
-                            <button type="submit" class="quantity-btn"
-                                    name="action" value="increase"
-                                    aria-label="Increase quantity">
-                                <i class="fa-solid fa-plus"></i>
-                            </button>
-                        </div>
-                    </form>
+            <div class="cart-controls">
+                <!-- Add to Cart Form (visible when product is not in cart) -->
+                <form action="{% url 'orders:cart_add' product.id %}?next={{ request.path }}" method="post" class="add-to-cart-form">
+                    {% csrf_token %}
+                    <input type="hidden" name="quantity" value="1">
+                    <button type="submit"
+                            class="button button--primary add-to-cart-button{% if cart|in_cart:product %} is-hidden{% endif %}" id="add-to-cart-btn">
+                        <i class="fa-solid fa-cart-shopping"></i>
+                        <span>Add to Cart</span>
+                    </button>
+                </form>
+
+                <!-- In Cart Label (shows when product is in cart) -->
+                <div class="in-cart-label{% if not cart|in_cart:product %} is-hidden{% endif %}" id="in-cart-label">
+                    <i class="fa-solid fa-check" ></i>
+                    <span>In Cart</span>
                 </div>
+
+
+                <!-- Quantity Counter Form (separate form) -->
+                <form action="{% url 'orders:cart_add' product.id %}?next={{ request.path }}" method="post" class="quantity-counter-form">
+                    {% csrf_token %}
+
+                    <div class="quantity-counter{% if not cart|in_cart:product %} is-hidden{% endif %}" id="quantity-counter">
+
+                        <!-- For decrease button -->
+                        <button type="submit" class="quantity-btn" name="action" value="decrease" aria-label="Decrease quantity">
+                            <i class="fa-solid fa-minus"></i>
+                        </button>
+                        
+                        {% cart_quantity cart product as qty %}
+                        <input type="number" 
+                               class="quantity-input" 
+                               name="manual_quantity" 
+                               value="{{ qty }}"
+                               data-quantity-input
+                               aria-label="Product quantity">
+                        
+                        <!-- For increase button -->
+                        <button type="submit" class="quantity-btn" name="action" value="increase" aria-label="Increase quantity">
+                            <i class="fa-solid fa-plus"></i>
+                        </button>
+
+                    </div>
+                </form>
+            </div>
             </div>
         </section>
 
         <!-- Technical Specifications Accordion -->
         <section class="accordion-section">
             <div class="accordion-item" id="tech-specs-accordion">
-                <div class="accordion-title"
-                     onclick="toggleAccordion('tech-specs-accordion')">
+                <div class="accordion-title" data-accordion="tech-specs-accordion">
                     <h3>Technical Specifications</h3>
                     <i class="fa-solid fa-chevron-down accordion-icon"></i>
                 </div>
@@ -160,11 +179,4 @@
         </section>
     </div>
     </main>
-
-    <script>
-        function toggleAccordion(accordionId) {
-            const accordion = document.getElementById(accordionId);
-            accordion.classList.toggle('active');
-        }
-    </script>
 {% endblock %}
