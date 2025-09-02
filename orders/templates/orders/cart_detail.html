@@ -95,17 +95,19 @@
 
           </div>
 
-         <div class="summary-actions">
-             <a class="button button--primary button--block"
-                 href="#">Checkout</a>
-              <form action="{% url 'orders:cart_clear' %}" method="post">
-                  {% csrf_token %}
-                  <button type="submit"
-                          class="button button--ghost button--block">
-                      Clear cart
-                  </button>
-              </form>
-        </div>
+         <<div class="summary-actions">
+          {% if user.is_authenticated %}
+              <a class="button button--primary button--block" href="{% url 'orders:checkout' %}">Checkout</a>
+          {% else %}
+              <a class="button button--primary button--block" href="{% url 'users:login' %}?next={% url 'orders:checkout' %}">
+                  Checkout
+              </a>
+          {% endif %}
+          <form action="{% url 'orders:cart_clear' %}" method="post">
+              {% csrf_token %}
+              <button type="submit" class="button button--ghost button--block">Clear cart</button>
+          </form>
+</div>
 
       </div>
   </div>
