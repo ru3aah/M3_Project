@@ -16,6 +16,7 @@ class CheckoutForm(forms.Form):
         user = kwargs.pop("user", None)
         super().__init__(*args, **kwargs)
 
+        # Update widget attributes for styling and accessibility
         self.fields["full_name"].widget.attrs.update(
             {"id": "full-name", "class": "Input", "placeholder": "Your full name"}
         )
@@ -33,13 +34,19 @@ class CheckoutForm(forms.Form):
             }
         )
 
+        # Pre-populate form fields with user data if available
         if user and not self.is_bound:
-            fn = (user.first_name or "").strip()
-            ln = (user.last_name or "").strip()
-            full_name = f"{fn} {ln}".strip()
-            phone = (getattr(user, "phone", "") or "").strip()
+            # Handle full name creation from user's first and last name
+            fn = getattr(user, "first_name", "") or ""
+            ln = getattr(user, "last_name", "") or ""
 
-            if full_name:
+            if fn or ln:  # Only create full_name if we have at least one name
+                full_name = f"{fn.strip()} {ln.strip()}".strip()
                 self.initial.setdefault("full_name", full_name)
+
+            # Handle phone number with validation
+            phone = getattr(user, "phone", None)
             if phone:
-                self.initial.setdefault("phone", phone)
+                phone = str(phone).strip()
+                if phone:  # Ensure it's not just whitespace
+                    self.initial.setdefault("phone", phone)
