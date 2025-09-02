@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 
 {% load static %}
+{% load cart_tags %}
 
 <html lang="en">
 <head>
@@ -63,8 +64,11 @@
                 <span class="user-label">{{ user.username }}</span>
             </div>
             <div class="cart-section">
-                <a href="#" class="cart-icon" aria-label="Shopping Cart">
-                    <i class="fas fa-shopping-bag"></i>
+                <a href="{% url 'orders:cart_detail' %}" class="cart-icon" aria-label="Shopping Cart">
+                <img src="{% static 'img/icons/Shopping_bag.svg' %}" alt="Shopping Cart">
+                {% if cart|length > 0 %}
+                <span class="cart-icon__count">{{ cart|length }}</span>
+                {% endif %}
                 </a>
                 <span class="cart-label">Cart</span>
             </div>
@@ -88,6 +92,15 @@
             <a href="{% url 'users:register' %}"
                class="button button--primary">Register</a>
         </div>
+            <div class="cart-section">
+                <a href="{% url 'orders:cart_detail' %}" class="cart-icon" aria-label="Shopping Cart">
+                <img src="{% static 'img/icons/Shopping_bag.svg' %}" alt="Shopping Cart">
+                {% if cart|length > 0 %}
+                <span class="cart-icon__count">{{ cart|length }}</span>
+                {% endif %}
+                </a>
+                <span class="cart-label">Cart</span>
+            </div>
         {% endif %}
     </div>
 </header>
