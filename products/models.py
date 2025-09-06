@@ -63,7 +63,12 @@ class Product(JournalizedModel):
     currency = models.CharField(max_length=3, default="USD")
     stock = models.PositiveIntegerField()
     unit_measure = models.TextField(max_length=5, default="kg")
-    image = models.ImageField(upload_to="product_images/", null=True, blank=True)
+    image = models.ImageField(
+        upload_to="product_images/",
+        default="product_images/no-image.png",
+        null=True,
+        blank=True,
+    )
     available = models.BooleanField(default=True)
 
     class Meta:

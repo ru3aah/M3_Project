@@ -1,5 +1,8 @@
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q
-from django.views.generic import DetailView, ListView, TemplateView
+from django.shortcuts import get_object_or_404
+from django.urls import reverse_lazy
+from django.views.generic import DetailView, ListView, TemplateView, CreateView
 from django.core.paginator import EmptyPage, PageNotAnInteger
 
 from config.settings import PRODUCTS_QUERY_MAP
@@ -7,6 +10,7 @@ from products.models import Product, ProductReview, Category, ProductTechSpec
 from django.db import models
 
 from orders.cart import Cart
+from .forms import ProductReviewForm
 
 
 class ProductDetailView(DetailView):
@@ -196,3 +200,32 @@ class ProductListView(ListView):
 
 class GuidesRecipesView(TemplateView):
     template_name = "guides-recipes.html"
+
+
+class ReviewCreateView(LoginRequiredMixin, CreateView):
+    model = ProductReview
+    form_class = ProductReviewForm
+    template_name = "products/product_review_form.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        # get product once here to reuse below
+        self.product = get_object_or_404(Product, slug=self.kwargs["slug"])
+        return super().dispatch(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        form.instance.user = self.request.user
+        form.instance.product = self.product
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return reverse_lazy(
+            "products:product-detail", kwargs={"slug": self.product.slug}
+        )
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["product"] = self.product
+        context["cancel_url"] = reverse_lazy(
+            "products:product-detail", kwargs={"slug": self.product.slug}
+        )
+        return context

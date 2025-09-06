@@ -176,6 +176,18 @@
                     <p>No reviews yet. Be the first to leave a review!</p>
                 {% endfor %}
             </div>
+            <div class="reviews-cta" style="margin: 1rem 0;">
+                {% if user.is_authenticated %}
+                    <a class="button button--primary"
+                       href="{% url 'products:review-create' product.slug %}">
+                        Write a review</a>
+                {% else %}
+                    <a class="button button--primary"
+                       href="{% url 'users:login' %}?next={{ request.path|urlencode }}">
+                        Sign in to write a review
+                    </a>
+                {% endif %}
+            </div>
         </section>
     </div>
     </main>
