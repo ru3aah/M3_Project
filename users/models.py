@@ -12,9 +12,7 @@ class User(AbstractUser):
         blank=True,
         default="profile_images/Default.png",
     )
-
-    phone = models.CharField(max_length=15, null=True, blank=True)
-
+    phone = models.CharField(max_length=32, null=True, blank=True)
     email = models.EmailField(unique=True)
 
     class Meta:
@@ -23,3 +21,13 @@ class User(AbstractUser):
 
     def __str__(self):
         return self.email
+
+
+class ShippingAddress(models.Model):
+    user_id = models.ForeignKey(User, on_delete=models.CASCADE)
+    address_line_1 = models.CharField(max_length=100)
+    address_line_2 = models.CharField(max_length=100, null=True, blank=True)
+    city = models.CharField(max_length=100)
+    country = models.CharField(max_length=100)
+    postal_code = models.CharField(max_length=8)
+    default = models.BooleanField(default=False)
