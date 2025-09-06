@@ -5,6 +5,7 @@ from django.db import transaction
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.generic import TemplateView
 from django.views.decorators.http import require_http_methods
+from mypy.main import process_cache_map
 
 from .cart import Cart
 from .forms import CheckoutForm
@@ -93,6 +94,10 @@ def checkout(request):
             data = form.cleaned_data
             addr = data["shipping_address"]  # <- ShippingAddress instance
 
+            pm = request.POST.get("payment_method", "debit")
+            if pm not in dict(Order.PAYMENT_METHODS):
+                pm = "debit"
+
             with transaction.atomic():
                 # Create order with FK to the chosen ShippingAddress
                 order = Order.objects.create(
@@ -100,8 +105,7 @@ def checkout(request):
                     status=OrderStatus.PENDING,
                     total_price=Decimal(str(cart.get_total_price())),
                     shipping_address=addr,
-                    # currency stays default or set it explicitly if needed:
-                    # currency="USD",
+                    payment_method=pm,
                 )
 
                 # Snapshot address + user contact into the order
