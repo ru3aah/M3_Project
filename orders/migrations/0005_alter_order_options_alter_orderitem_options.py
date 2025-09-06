@@ -1,10 +1,9 @@
-# users/migrations/0005_shippingaddress_full_name.py
+# orders/migrations/0005_alter_order_options_alter_orderitem_options.py
 from django.db import migrations
 
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("users", "0004_remove_shippingaddress_full_name"),
+        ("orders", "0003_order_payment_method"),
     ]
-
     operations = []
