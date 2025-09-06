@@ -2,6 +2,7 @@ from django.contrib.auth.views import LoginView, LogoutView
 from django.urls import path
 from users import views
 from users.forms import UserLoginForm
+from users.views import ShippingAddressCreateView
 
 app_name = "users"
 
@@ -21,4 +22,5 @@ urlpatterns = [
     path(
         "logout/", LogoutView.as_view(next_page="products:product-list"), name="logout"
     ),
+    path("addresses/add/", ShippingAddressCreateView.as_view(), name="address_add"),
 ]

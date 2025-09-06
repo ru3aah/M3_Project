@@ -1,0 +1,293 @@
+[
+{
+  "model": "products.category",
+  "pk": 1,
+  "fields": {
+    "created_at": "2025-08-21T11:40:09.320Z",
+    "updated_at": "2025-08-22T07:08:21.007Z",
+    "name": "Malts",
+    "slug": "malts",
+    "parent": null
+  }
+},
+{
+  "model": "products.category",
+  "pk": 2,
+  "fields": {
+    "created_at": "2025-08-22T06:14:31.442Z",
+    "updated_at": "2025-08-22T07:07:58.218Z",
+    "name": "Hops",
+    "slug": "hops",
+    "parent": null
+  }
+},
+{
+  "model": "products.category",
+  "pk": 3,
+  "fields": {
+    "created_at": "2025-08-22T07:08:51.071Z",
+    "updated_at": "2025-08-22T07:08:51.071Z",
+    "name": "Yeast",
+    "slug": "yeast",
+    "parent": null
+  }
+},
+{
+  "model": "products.category",
+  "pk": 4,
+  "fields": {
+    "created_at": "2025-08-22T07:09:17.664Z",
+    "updated_at": "2025-08-22T07:09:17.664Z",
+    "name": "Adjuncts",
+    "slug": "adjuncts",
+    "parent": null
+  }
+},
+{
+  "model": "products.product",
+  "pk": 1,
+  "fields": {
+    "created_at": "2025-08-21T11:40:29.478Z",
+    "updated_at": "2025-09-01T20:45:25.057Z",
+    "name": "Caramel Malt 60L",
+    "slug": "caramel-malt-60l",
+    "category": 1,
+    "description": "Ideal for IPAs and Pale Ales. \r\n\r\nCaramel Malt 60L (also known as Crystal 60L) is a versatile specialty malt that is a secret weapon for many brewers to enhance beer color, flavor, and body. It imparts a beautiful copper-amber hue to the brew.\r\n\r\nThe flavor of this malt is characterized by distinct notes of caramel, toffee, and light hints of toasted bread. It adds a pleasant sweetness to the beer that beautifully balances hop bitterness and also contributes to improved head retention.\r\n\r\nCaramel Malt 60L is ideal for a wide range of styles, from Pale Ales and Amber Ales to Porters and Stouts, adding complexity and depth.",
+    "price": "3.00",
+    "currency": "USD",
+    "stock": 1,
+    "unit_measure": "kg",
+    "image": "product_images/caramel_malt.jpg",
+    "available": true
+  }
+},
+{
+  "model": "products.product",
+  "pk": 2,
+  "fields": {
+    "created_at": "2025-08-22T06:16:10.045Z",
+    "updated_at": "2025-08-27T08:55:01.175Z",
+    "name": "Cascade Hops",
+    "slug": "cascade-hops",
+    "category": 2,
+    "description": "Great for dry hopping.\r\n\r\nCascade is arguably the most famous hop in the American craft brewing revolution. Developed in Oregon, it has a unique floral and citrus character that defined the taste of the classic American Pale Ale.\r\n\r\nIts moderate bitterness and vibrant aroma, with notes of grapefruit, orange, and light floral undertones, make it incredibly versatile. Cascade is excellent for both bittering and late kettle additions or for dry hopping.\r\n\r\nThis hop is a reliable choice for brewers looking to create a refreshing, balanced, and recognizable ale.",
+    "price": "7.49",
+    "currency": "USD",
+    "stock": 18,
+    "unit_measure": "100 g",
+    "image": "product_images/cascade_hops.jpg",
+    "available": true
+  }
+},
+{
+  "model": "products.product",
+  "pk": 3,
+  "fields": {
+    "created_at": "2025-08-25T07:59:29.244Z",
+    "updated_at": "2025-08-27T08:11:48.826Z",
+    "name": "Imperial Organic Yeast A07",
+    "slug": "imperial-organic-yeast-a07",
+    "category": 3,
+    "description": "Perfect for most American beers.\r\n\r\nImperial Organic Yeast A07 \"Flagship\" is a versatile and extremely popular liquid yeast, known for its ability to create balanced ales with a light fruity character. \r\n\r\n\"Flagship\" provides a clean fermentation with light ester notes of citrus and stone fruit that complement, rather than overpower, the hop and malt profile. It has good attenuation and moderate flocculation, leaving behind a soft and smooth mouthfeel.\r\n\r\nThanks to the high cell count per package (200 billion), this yeast does not require a starter for most standard batches of beer, making it a convenient and reliable choice.",
+    "price": "8.99",
+    "currency": "USD",
+    "stock": 18,
+    "unit_measure": "pouch",
+    "image": "product_images/imperial_yeast.jpg",
+    "available": true
+  }
+},
+{
+  "model": "products.productreview",
+  "pk": 1,
+  "fields": {
+    "created_at": "2025-08-21T14:31:18.189Z",
+    "updated_at": "2025-08-21T14:31:18.189Z",
+    "product": 1,
+    "user": [
+      "ru3aah@gmail.com"
+    ],
+    "rating": 3,
+    "title": "Perfect Staff",
+    "comment": "Just by it and you's satisfied"
+  }
+},
+{
+  "model": "products.productreview",
+  "pk": 2,
+  "fields": {
+    "created_at": "2025-08-21T14:36:08.411Z",
+    "updated_at": "2025-08-21T14:36:08.411Z",
+    "product": 1,
+    "user": [
+      "user2@mail.ru"
+    ],
+    "rating": 4,
+    "title": "Perfect",
+    "comment": "I'd certainly recommend this"
+  }
+},
+{
+  "model": "products.productreview",
+  "pk": 3,
+  "fields": {
+    "created_at": "2025-08-21T14:53:43.422Z",
+    "updated_at": "2025-08-21T14:53:43.422Z",
+    "product": 1,
+    "user": [
+      "ru3aah@gmail.com"
+    ],
+    "rating": 2,
+    "title": "so so",
+    "comment": "so so"
+  }
+},
+{
+  "model": "products.productreview",
+  "pk": 4,
+  "fields": {
+    "created_at": "2025-08-21T14:54:14.947Z",
+    "updated_at": "2025-08-21T14:54:14.947Z",
+    "product": 1,
+    "user": [
+      "user2@mail.ru"
+    ],
+    "rating": 5,
+    "title": "Extra class",
+    "comment": "you'd must try it"
+  }
+},
+{
+  "model": "products.productreview",
+  "pk": 5,
+  "fields": {
+    "created_at": "2025-08-26T07:57:38.151Z",
+    "updated_at": "2025-08-26T07:57:38.151Z",
+    "product": 2,
+    "user": [
+      "user2@mail.ru"
+    ],
+    "rating": 4,
+    "title": "I'd suggest this",
+    "comment": "perfect thing with sound quality"
+  }
+},
+{
+  "model": "products.productreview",
+  "pk": 6,
+  "fields": {
+    "created_at": "2025-08-26T07:58:40.152Z",
+    "updated_at": "2025-08-26T07:58:40.152Z",
+    "product": 3,
+    "user": [
+      "user10@mail.ru"
+    ],
+    "rating": 3,
+    "title": "I'd try to find other next time",
+    "comment": "average product with average price"
+  }
+},
+{
+  "model": "products.productreview",
+  "pk": 7,
+  "fields": {
+    "created_at": "2025-08-26T07:59:41.363Z",
+    "updated_at": "2025-08-26T07:59:41.363Z",
+    "product": 3,
+    "user": [
+      "user2@mail.ru"
+    ],
+    "rating": 4,
+    "title": "Almost all you need",
+    "comment": "Acceptable quality at reasonable price"
+  }
+},
+{
+  "model": "products.producttechspec",
+  "pk": 1,
+  "fields": {
+    "product": 3,
+    "tech_spec": {
+      "name": "Origin",
+      "value": "USA"
+    }
+  }
+},
+{
+  "model": "products.producttechspec",
+  "pk": 2,
+  "fields": {
+    "product": 3,
+    "tech_spec": {
+      "name": "Type",
+      "value": "Dry Ale Yeast"
+    }
+  }
+},
+{
+  "model": "products.producttechspec",
+  "pk": 3,
+  "fields": {
+    "product": 3,
+    "tech_spec": {
+      "name": "Attenuation",
+      "value": "78-82%"
+    }
+  }
+},
+{
+  "model": "products.producttechspec",
+  "pk": 4,
+  "fields": {
+    "product": 3,
+    "tech_spec": {
+      "name": "Flocculation",
+      "value": "Medium to High"
+    }
+  }
+},
+{
+  "model": "products.producttechspec",
+  "pk": 5,
+  "fields": {
+    "product": 3,
+    "tech_spec": {
+      "name": "Alcohol Tolerance",
+      "value": "9-11% ABV"
+    }
+  }
+},
+{
+  "model": "products.producttechspec",
+  "pk": 6,
+  "fields": {
+    "product": 3,
+    "tech_spec": {
+      "name": "Fermentation Temperature",
+      "value": "59-75°F (15-24°C)"
+    }
+  }
+},
+{
+  "model": "products.producttechspec",
+  "pk": 7,
+  "fields": {
+    "product": 3,
+    "tech_spec": {
+      "name": "Pitching Rate",
+      "value": "11.5g sachet for 5-6 gallons (20-23 L)"
+    }
+  }
+},
+{
+  "model": "products.producttechspec",
+  "pk": 8,
+  "fields": {
+    "product": 3,
+    "tech_spec": {
+      "name": "Recommended Beer Styles",
+      "value": "American Pale Ale, American IPA, Brown Ale, Porter, Stout, American Wheat"
+    }
+  }
+}
+]

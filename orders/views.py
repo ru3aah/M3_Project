@@ -91,27 +91,49 @@ def checkout(request):
         form = CheckoutForm(request.POST, user=request.user)
         if form.is_valid():
             data = form.cleaned_data
+            addr = data["shipping_address"]  # <- ShippingAddress instance
+
             with transaction.atomic():
+                # Create order with FK to the chosen ShippingAddress
                 order = Order.objects.create(
                     user=request.user,
                     status=OrderStatus.PENDING,
-                    total_price=cart.get_total_price(),
-                    shipping_address=f"{data['shipping_address']} (City: {data['city']})",
+                    total_price=Decimal(str(cart.get_total_price())),
+                    shipping_address=addr,
+                    # currency stays default or set it explicitly if needed:
+                    # currency="USD",
                 )
+
+                # Snapshot address + user contact into the order
+                order.snap_shipping_address(addr)
+                order.save(
+                    update_fields=[
+                        "ship_full_name",
+                        "ship_recipient_phone",
+                        "ship_address_line1",
+                        "ship_address_line2",
+                        "ship_city",
+                        "ship_country",
+                        "ship_postal_code",
+                    ]
+                )
+
+                # Create order items from the cart
                 for line in cart:
-                    # Expecting: product, price (unit), quantity from Cart
                     OrderItem.objects.create(
                         order=order,
                         product=line["product"],
                         price=Decimal(str(line["price"])),
                         quantity=int(line["quantity"]),
                     )
-                cart.clear()
 
-                # Persist back to User model: first_name, last_name, phone
+                # Optional: persist user profile details from the form
                 _update_user_from_checkout(
-                    request.user, data["full_name"], data["phone"]
+                    request.user, data.get("full_name", ""), data.get("phone", "")
                 )
+
+                # Clear cart only after order is safely saved
+                cart.clear()
 
             return redirect("orders:order_success", order_id=order.id)
     else:

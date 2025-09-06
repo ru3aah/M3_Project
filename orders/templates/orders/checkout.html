@@ -13,6 +13,12 @@
         <form method="post" action="{% url 'orders:checkout' %}">
             {% csrf_token %}
 
+        {% if form.non_field_errors %}
+        <div class="error-text" style="margin-bottom:1rem;">
+          {% for e in form.non_field_errors %}{{ e }}{% if not forloop.last %}<br>{% endif %}{% endfor %}
+        </div>
+        {% endif %}
+
             <!-- Shipping Information -->
             <section class="checkout-section">
                 <h2 class="checkout-section__title">Shipping Information</h2>
@@ -30,16 +36,22 @@
                 </div>
 
                 <div class="checkout-form-group">
-                    <label for="city">City</label>
-                    {{ form.city }}
-                    {{ form.city.errors }}
-                </div>
-
-                <div class="checkout-form-group">
                     <label for="address">Shipping Address</label>
                     {{ form.shipping_address }}
                     {{ form.shipping_address.errors }}
+                    {% if form.shipping_address.field.widget.attrs.disabled %}
+                        <small class="hint">No any address available. Add one in your profile.</small>
+                    {% else %}
+                        <small class="hint">Select one of your saved addresses.</small>
+                    {% endif %}
                 </div>
+                <small class="hint">
+                {% if user.is_authenticated %}
+                    <a href="{% url 'users:address_add' %}?next={{ request.path|urlencode }}">
+                        + Add new address
+                    </a>
+                {% endif %}
+            </small>
             </section>
 
             <!-- Payment Method -->
