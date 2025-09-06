@@ -11,18 +11,19 @@
       <div class="cart-item__body">
         <div class="cart-item__details">
           <h2 class="cart-item__title">Thank you!</h2>
-          <p class="cart-item__price">Order ID: #{{ order.id }}</p>
-          <p class="cart-item__price">Total paid: {{ order.total_price }}</p>
+            <p class="cart-item__price">Order #: {{ order.id }} </p>
+            <p class="cart-item__price">Placed: {{ order.created_at }}</p>
+          <p class="cart-item__price">Total amount: {{ order.total_price }}</p>
           <p class="cart-item__price">Status: {{ order.get_status_display }}</p>
           <p class="cart-item__price">Shipping to:</p>
-          <p>{{ order.shipping_address|linebreaksbr }}</p>
+          <p class="cart-item__price"
+          >{{ order.shipping_address|linebreaksbr }}</p>
         </div>
       </div>
     </div>
 
     <div class="summary-actions">
       <a class="button button--primary button--block" href="{% url 'products:product-list' %}">Continue shopping</a>
-      <a class="button button--secondary button--block" href="{% url 'orders:cart_detail' %}">View cart</a>
     </div>
   </div>
 </main>

@@ -12,6 +12,7 @@ from .models import (
     Order,
     OrderItem,
     OrderStatus,
+    PaymentMethod,
 )
 
 
@@ -76,76 +77,96 @@ def cart_clear(request):
 @login_required(login_url="users:login")
 @require_http_methods(["GET", "POST"])
 def checkout(request):
-    """
-    Authenticated checkout:
-    - GET: prefilled form (full_name, phone) and asks for city + shipping_address
-    - POST: validates & creates Order (+ OrderItems) then clears cart
-    - Persists updated first_name/last_name/phone to the User model
-    """
     cart = Cart(request)
     if len(cart) == 0:
         messages.info(request, "Your cart is empty.")
         return redirect("orders:cart_detail")
 
-    if request.method == "POST":
-        form = CheckoutForm(request.POST, user=request.user)
-        if form.is_valid():
-            data = form.cleaned_data
-            addr = data["shipping_address"]  # <- ShippingAddress instance
+    if request.method == "GET":
+        return render(
+            request,
+            "orders/checkout.html",
+            {"cart": cart, "form": CheckoutForm(user=request.user)},
+        )
 
-            with transaction.atomic():
-                # Create order with FK to the chosen ShippingAddress
-                order = Order.objects.create(
-                    user=request.user,
-                    status=OrderStatus.PENDING,
-                    total_price=Decimal(str(cart.get_total_price())),
-                    shipping_address=addr,
-                    # currency stays default or set it explicitly if needed:
-                    # currency="USD",
-                )
+    form = CheckoutForm(request.POST, user=request.user)
+    if not form.is_valid():
+        return render(request, "orders/checkout.html", {"cart": cart, "form": form})
 
-                # Snapshot address + user contact into the order
-                order.snap_shipping_address(addr)
-                order.save(
-                    update_fields=[
-                        "ship_full_name",
-                        "ship_recipient_phone",
-                        "ship_address_line1",
-                        "ship_address_line2",
-                        "ship_city",
-                        "ship_country",
-                        "ship_postal_code",
-                    ]
-                )
+    data = form.cleaned_data
+    addr = data["shipping_address"]
 
-                # Create order items from the cart
-                for line in cart:
-                    OrderItem.objects.create(
-                        order=order,
-                        product=line["product"],
-                        price=Decimal(str(line["price"])),
-                        quantity=int(line["quantity"]),
-                    )
+    allowed = {c for c, _ in PaymentMethod.choices}
+    pm = (
+        data.get("payment_method")
+        or request.POST.get("payment_method")
+        or PaymentMethod.CARD
+    )
+    if pm not in allowed:
+        pm = PaymentMethod.CARD
 
-                # Optional: persist user profile details from the form
-                _update_user_from_checkout(
-                    request.user, data.get("full_name", ""), data.get("phone", "")
-                )
+    with transaction.atomic():
+        order = Order.objects.create(
+            user=request.user,
+            status=OrderStatus.PENDING,
+            total_price=Decimal("0.00"),  # set after items
+            shipping_address=addr,
+            payment_method=pm,
+        )
 
-                # Clear cart only after order is safely saved
-                cart.clear()
+        # Build items + subtotal (always from DB price)
+        items, subtotal = [], Decimal("0.00")
+        for line in cart:
+            product = line["product"]
+            qty = int(line.get("quantity", line.get("data", {}).get("quantity", 0)))
+            unit = Decimal(str(product.price))
+            items.append(
+                OrderItem(order=order, product=product, price=unit, quantity=qty)
+            )
+            subtotal += unit * Decimal(qty)
 
-            return redirect("orders:order_success", order_id=order.id)
-    else:
-        form = CheckoutForm(user=request.user)
+        OrderItem.objects.bulk_create(items)
+        order.snap_shipping_address(addr)
+        order.total_price = subtotal.quantize(Decimal("0.01"))
+        order.save(
+            update_fields=[
+                "ship_full_name",
+                "ship_recipient_phone",
+                "ship_address_line1",
+                "ship_address_line2",
+                "ship_city",
+                "ship_country",
+                "ship_postal_code",
+                "total_price",
+            ]
+        )
 
-    return render(request, "orders/checkout.html", {"cart": cart, "form": form})
+        # Minimal user update
+        full = (data.get("full_name") or "").strip().split()
+        if full:
+            request.user.first_name = full[0]
+            request.user.last_name = " ".join(full[1:]) if len(full) > 1 else ""
+        phone = data.get("phone")
+        if phone:
+            setattr(request.user, "phone", phone)
+        request.user.save(update_fields=["first_name", "last_name", "phone"])
+
+        cart.clear()
+
+    return redirect("orders:order_details", order_id=order.id)
 
 
 @login_required(login_url="users:login")
 def order_success(request, order_id: int):
     order = get_object_or_404(Order, id=order_id, user=request.user)
-    return render(request, "orders/order_success.html", {"order": order})
+    return render(
+        request,
+        "orders/order_success.html",
+        {
+            "order": order,
+            "created_at": order.created_at.strftime("%Y-%m-%d %H:%M"),
+        },
+    )
 
 
 def _update_user_from_checkout(user, full_name: str, phone: str) -> None:
@@ -166,3 +187,96 @@ def _update_user_from_checkout(user, full_name: str, phone: str) -> None:
         changed = True
     if changed:
         user.save()
+
+
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render, redirect, get_object_or_404
+from django.utils import timezone
+
+# ... keep your existing imports and code ...
+
+
+@login_required(login_url="users:login")
+def order_details(request, order_id: int):
+    """
+    Detailed order page:
+      1) Order header: number, date, total, currency, status
+      2) User details
+      3) Shipping address (snapshot)
+      4) Payment method
+      5) Item list with product, unit price, qty, measure unit, line subtotal
+    """
+    order = get_object_or_404(
+        Order.objects.select_related("user", "shipping_address"),
+        id=order_id,
+        user=request.user,
+    )
+
+    # Fetch items + products in one go
+    items = order.items.select_related("product").all()
+
+    # Build a lightweight items view model with safe fallbacks
+    vm_items = []
+    subtotal = Decimal("0.00")
+    for it in items:
+        unit_price = Decimal(str(it.price))  # unit price at time of purchase
+        qty = int(it.quantity)
+        line_total = (unit_price * Decimal(qty)).quantize(Decimal("0.01"))
+
+        product = it.product
+        measure_unit = (
+            getattr(product, "measuring_unit", None)
+            or getattr(product, "measure_unit", None)
+            or getattr(product, "unit", None)
+            or ""
+        )
+
+        vm_items.append(
+            {
+                "name": getattr(
+                    product, "name", f"Product #{getattr(product, 'id', '')}"
+                ),
+                "unit_price": unit_price,
+                "quantity": qty,
+                "measure_unit": measure_unit,
+                "line_total": line_total,
+            }
+        )
+        subtotal += line_total
+
+    context = {
+        # 1) Order header
+        "order": order,
+        "order_number": order.id,
+        "created_at": order.created_at,  # use |date in template
+        "total_price": order.total_price,
+        "currency": order.currency,
+        "status": order.get_status_display(),  # human label
+        # 2) User details
+        "user_full_name": order.ship_full_name
+        or (
+            f"{getattr(order.user, 'first_name', '')} {getattr(order.user, 'last_name', '')}"
+        ).strip(),
+        "user_email": getattr(order.user, "email", ""),
+        "user_phone": order.ship_recipient_phone or getattr(order.user, "phone", ""),
+        # 3) Shipping address snapshot (from order)
+        "ship_address_line1": order.ship_address_line1,
+        "ship_address_line2": order.ship_address_line2,
+        "ship_city": order.ship_city,
+        "ship_country": order.ship_country,
+        "ship_postal_code": order.ship_postal_code,
+        # 4) Payment method
+        "payment_method": order.get_payment_method_display(),
+        # 5) Items
+        "items": vm_items,
+        "subtotal": subtotal.quantize(Decimal("0.01")),
+    }
+    return render(request, "orders/order_details.html", context)
+
+
+@login_required(login_url="users:login")
+def order_success(request, order_id: int):
+    """
+    Keep existing route working, but show the new details page.
+    """
+    return redirect("orders:order_details", order_id=order_id)

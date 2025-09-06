@@ -12,6 +12,12 @@ class OrderStatus(models.TextChoices):
     CANCELLED = "cancelled", "Cancelled"
 
 
+class PaymentMethod(models.TextChoices):
+    CARD = "card", "Debit Card"
+    WALLET = "wallet", "Digital Wallet"
+    COD = "cod", "Cash on Delivery"
+
+
 class Order(JournalizedModel):
     user = models.ForeignKey(
         get_user_model(),
@@ -36,6 +42,13 @@ class Order(JournalizedModel):
     ship_city = models.CharField(max_length=255, blank=True, default="")
     ship_country = models.CharField(max_length=255, blank=True, default="")
     ship_postal_code = models.CharField(max_length=8, blank=True, default="")
+
+    payment_method = models.CharField(
+        max_length=20,
+        choices=PaymentMethod,
+        default=PaymentMethod.CARD,
+        db_index=True,
+    )
 
     status = models.CharField(
         max_length=20,

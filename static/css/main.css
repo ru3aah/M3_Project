@@ -1806,6 +1806,23 @@ footer {
     padding: 12px;
 }
 
+.checkout-form-group {
+  display: flex;
+  justify-content: space-between; /* label on the left, value on the right */
+  align-items: center;            /* vertical alignment */
+  gap: 1rem;                      /* spacing between label and value */
+}
+
+.checkout-form-group label {
+  font-weight: 500; /* or whatever you use for labels */
+  margin: 0;        /* remove default spacing */
+}
+
+.checkout-form-group div {
+  flex: 1;          /* let the value expand */
+  text-align: right; /* align value to the right */
+}
+
 /*
 
 
