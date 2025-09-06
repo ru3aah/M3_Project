@@ -159,7 +159,14 @@ def checkout(request):
 @login_required(login_url="users:login")
 def order_success(request, order_id: int):
     order = get_object_or_404(Order, id=order_id, user=request.user)
-    return render(request, "orders/order_success.html", {"order": order})
+    return render(
+        request,
+        "orders/order_success.html",
+        {
+            "order": order,
+            "created_at": order.created_at.strftime("%Y-%m-%d %H:%M"),
+        },
+    )
 
 
 def _update_user_from_checkout(user, full_name: str, phone: str) -> None:
