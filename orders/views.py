@@ -153,7 +153,7 @@ def checkout(request):
 
         cart.clear()
 
-    return redirect("orders:order_success", order_id=order.id)
+    return redirect("orders:order_details", order_id=order.id)
 
 
 @login_required(login_url="users:login")
@@ -187,3 +187,96 @@ def _update_user_from_checkout(user, full_name: str, phone: str) -> None:
         changed = True
     if changed:
         user.save()
+
+
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render, redirect, get_object_or_404
+from django.utils import timezone
+
+# ... keep your existing imports and code ...
+
+
+@login_required(login_url="users:login")
+def order_details(request, order_id: int):
+    """
+    Detailed order page:
+      1) Order header: number, date, total, currency, status
+      2) User details
+      3) Shipping address (snapshot)
+      4) Payment method
+      5) Item list with product, unit price, qty, measure unit, line subtotal
+    """
+    order = get_object_or_404(
+        Order.objects.select_related("user", "shipping_address"),
+        id=order_id,
+        user=request.user,
+    )
+
+    # Fetch items + products in one go
+    items = order.items.select_related("product").all()
+
+    # Build a lightweight items view model with safe fallbacks
+    vm_items = []
+    subtotal = Decimal("0.00")
+    for it in items:
+        unit_price = Decimal(str(it.price))  # unit price at time of purchase
+        qty = int(it.quantity)
+        line_total = (unit_price * Decimal(qty)).quantize(Decimal("0.01"))
+
+        product = it.product
+        measure_unit = (
+            getattr(product, "measuring_unit", None)
+            or getattr(product, "measure_unit", None)
+            or getattr(product, "unit", None)
+            or ""
+        )
+
+        vm_items.append(
+            {
+                "name": getattr(
+                    product, "name", f"Product #{getattr(product, 'id', '')}"
+                ),
+                "unit_price": unit_price,
+                "quantity": qty,
+                "measure_unit": measure_unit,
+                "line_total": line_total,
+            }
+        )
+        subtotal += line_total
+
+    context = {
+        # 1) Order header
+        "order": order,
+        "order_number": order.id,
+        "created_at": order.created_at,  # use |date in template
+        "total_price": order.total_price,
+        "currency": order.currency,
+        "status": order.get_status_display(),  # human label
+        # 2) User details
+        "user_full_name": order.ship_full_name
+        or (
+            f"{getattr(order.user, 'first_name', '')} {getattr(order.user, 'last_name', '')}"
+        ).strip(),
+        "user_email": getattr(order.user, "email", ""),
+        "user_phone": order.ship_recipient_phone or getattr(order.user, "phone", ""),
+        # 3) Shipping address snapshot (from order)
+        "ship_address_line1": order.ship_address_line1,
+        "ship_address_line2": order.ship_address_line2,
+        "ship_city": order.ship_city,
+        "ship_country": order.ship_country,
+        "ship_postal_code": order.ship_postal_code,
+        # 4) Payment method
+        "payment_method": order.get_payment_method_display(),
+        # 5) Items
+        "items": vm_items,
+        "subtotal": subtotal.quantize(Decimal("0.01")),
+    }
+    return render(request, "orders/order_details.html", context)
+
+
+@login_required(login_url="users:login")
+def order_success(request, order_id: int):
+    """
+    Keep existing route working, but show the new details page.
+    """
+    return redirect("orders:order_details", order_id=order_id)

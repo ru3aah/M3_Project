@@ -7,6 +7,7 @@ from orders.views import (
     cart_clear,
     checkout,
     order_success,
+    order_details,
 )
 
 app_name = "orders"
@@ -18,4 +19,5 @@ urlpatterns = [
     path("cart/clear/", cart_clear, name="cart_clear"),
     path("checkout/", checkout, name="checkout"),
     path("order-success/<int:order_id>/", order_success, name="order_success"),
+    path("orders/<int:order_id>/", order_details, name="order_details"),
 ]
