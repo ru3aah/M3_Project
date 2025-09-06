@@ -62,7 +62,7 @@ class Product(JournalizedModel):
     price = models.DecimalField(max_digits=10, decimal_places=2)
     currency = models.CharField(max_length=3, default="USD")
     stock = models.PositiveIntegerField()
-    unit_measure = models.TextField(max_length=5, default="kg")
+    unit_measure = models.TextField(max_length=20, default="kg")
     image = models.ImageField(
         upload_to="product_images/",
         default="product_images/no-image.png",
