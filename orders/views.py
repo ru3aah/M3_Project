@@ -5,7 +5,6 @@ from django.db import transaction
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.generic import TemplateView
 from django.views.decorators.http import require_http_methods
-from mypy.main import process_cache_map
 
 from .cart import Cart
 from .forms import CheckoutForm
@@ -13,6 +12,7 @@ from .models import (
     Order,
     OrderItem,
     OrderStatus,
+    PaymentMethod,
 )
 
 
@@ -77,73 +77,83 @@ def cart_clear(request):
 @login_required(login_url="users:login")
 @require_http_methods(["GET", "POST"])
 def checkout(request):
-    """
-    Authenticated checkout:
-    - GET: prefilled form (full_name, phone) and asks for city + shipping_address
-    - POST: validates & creates Order (+ OrderItems) then clears cart
-    - Persists updated first_name/last_name/phone to the User model
-    """
     cart = Cart(request)
     if len(cart) == 0:
         messages.info(request, "Your cart is empty.")
         return redirect("orders:cart_detail")
 
-    if request.method == "POST":
-        form = CheckoutForm(request.POST, user=request.user)
-        if form.is_valid():
-            data = form.cleaned_data
-            addr = data["shipping_address"]  # <- ShippingAddress instance
+    if request.method == "GET":
+        return render(
+            request,
+            "orders/checkout.html",
+            {"cart": cart, "form": CheckoutForm(user=request.user)},
+        )
 
-            pm = request.POST.get("payment_method", "debit")
-            if pm not in dict(Order.PAYMENT_METHODS):
-                pm = "debit"
+    form = CheckoutForm(request.POST, user=request.user)
+    if not form.is_valid():
+        return render(request, "orders/checkout.html", {"cart": cart, "form": form})
 
-            with transaction.atomic():
-                # Create order with FK to the chosen ShippingAddress
-                order = Order.objects.create(
-                    user=request.user,
-                    status=OrderStatus.PENDING,
-                    total_price=Decimal(str(cart.get_total_price())),
-                    shipping_address=addr,
-                    payment_method=pm,
-                )
+    data = form.cleaned_data
+    addr = data["shipping_address"]
 
-                # Snapshot address + user contact into the order
-                order.snap_shipping_address(addr)
-                order.save(
-                    update_fields=[
-                        "ship_full_name",
-                        "ship_recipient_phone",
-                        "ship_address_line1",
-                        "ship_address_line2",
-                        "ship_city",
-                        "ship_country",
-                        "ship_postal_code",
-                    ]
-                )
+    allowed = {c for c, _ in PaymentMethod.choices}
+    pm = (
+        data.get("payment_method")
+        or request.POST.get("payment_method")
+        or PaymentMethod.CARD
+    )
+    if pm not in allowed:
+        pm = PaymentMethod.CARD
 
-                # Create order items from the cart
-                for line in cart:
-                    OrderItem.objects.create(
-                        order=order,
-                        product=line["product"],
-                        price=Decimal(str(line["price"])),
-                        quantity=int(line["quantity"]),
-                    )
+    with transaction.atomic():
+        order = Order.objects.create(
+            user=request.user,
+            status=OrderStatus.PENDING,
+            total_price=Decimal("0.00"),  # set after items
+            shipping_address=addr,
+            payment_method=pm,
+        )
 
-                # Optional: persist user profile details from the form
-                _update_user_from_checkout(
-                    request.user, data.get("full_name", ""), data.get("phone", "")
-                )
+        # Build items + subtotal (always from DB price)
+        items, subtotal = [], Decimal("0.00")
+        for line in cart:
+            product = line["product"]
+            qty = int(line.get("quantity", line.get("data", {}).get("quantity", 0)))
+            unit = Decimal(str(product.price))
+            items.append(
+                OrderItem(order=order, product=product, price=unit, quantity=qty)
+            )
+            subtotal += unit * Decimal(qty)
 
-                # Clear cart only after order is safely saved
-                cart.clear()
+        OrderItem.objects.bulk_create(items)
+        order.snap_shipping_address(addr)
+        order.total_price = subtotal.quantize(Decimal("0.01"))
+        order.save(
+            update_fields=[
+                "ship_full_name",
+                "ship_recipient_phone",
+                "ship_address_line1",
+                "ship_address_line2",
+                "ship_city",
+                "ship_country",
+                "ship_postal_code",
+                "total_price",
+            ]
+        )
 
-            return redirect("orders:order_success", order_id=order.id)
-    else:
-        form = CheckoutForm(user=request.user)
+        # Minimal user update
+        full = (data.get("full_name") or "").strip().split()
+        if full:
+            request.user.first_name = full[0]
+            request.user.last_name = " ".join(full[1:]) if len(full) > 1 else ""
+        phone = data.get("phone")
+        if phone:
+            setattr(request.user, "phone", phone)
+        request.user.save(update_fields=["first_name", "last_name", "phone"])
 
-    return render(request, "orders/checkout.html", {"cart": cart, "form": form})
+        cart.clear()
+
+    return redirect("orders:order_success", order_id=order.id)
 
 
 @login_required(login_url="users:login")
