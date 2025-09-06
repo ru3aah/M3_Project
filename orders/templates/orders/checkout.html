@@ -57,6 +57,9 @@
             <!-- Payment Method -->
             <section class="checkout-section">
                 <h2 class="checkout-section__title">Payment Method</h2>
+
+                {% with pm=request.POST.payment_method|default:'debit' %}
+
                 <div class="payment-options">
                     <label class="radio-option">
                         <input type="radio" name="payment_method" value="debit" checked>
@@ -74,6 +77,7 @@
                         <span class="radio-label">Cash On Delivery</span>
                     </label>
                 </div>
+            {% endwith %}
             </section>
 
             <!-- Order Summary -->
