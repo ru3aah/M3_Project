@@ -210,19 +210,18 @@
                       <td>
                           {% if order.status == OrderStatus.PENDING %}
                               <div class="order-actions">
-                                  <form method="post"
-                                        action="{% url 'orders:pay_order' order.id %}">
-                                      {% csrf_token %}
-                                      <button type="submit"
-                                              class="button button--primary">Pay
-                                      </button>
-                                  </form>
+      {% if order.payment_method != PaymentMethod.COD %}
+          <form method="post" action="{% url 'orders:pay_order' order.id %}">
+              {% csrf_token %}
+              <button type="submit" class="button button--primary">Pay</button>
+          </form>
+      {% endif %}
                                   <form method="post"
                                         action="{% url 'orders:cancel_order' order.id %}">
                                       {% csrf_token %}
                                       <button type="submit"
-                                              class="button button--secondary">Cancel
-                                      </button>
+                                              class="button button--secondary">
+                                          Cancel</button>
                                   </form>
                               </div>
                           {% else %}—{% endif %}
@@ -236,8 +235,6 @@
               </tbody>
           </table>
       </section>
-
-
   </div>
 </main>
 {% endblock %}
