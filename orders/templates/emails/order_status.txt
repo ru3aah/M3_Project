@@ -1,0 +1,14 @@
+{% if is_created %}Thanks for your order! Your order has been created.{% else %}Your order status has been updated.{% endif %}
+
+Order number: #{{ order_id }}
+Current status: {{ status_label }}{% if old_status_label %} (previously: {{ old_status_label }}){% endif %}
+Total: {{ currency }} {{ total_price }}
+
+Payment method: {{ payment_method_label }}
+Placed on: {{ created_at|date:"F j, Y, g:i a" }}
+
+View your order:
+{{ order_url }}
+
+— {{ site_name }}
+If you have any questions, contact us: support@mail.com
