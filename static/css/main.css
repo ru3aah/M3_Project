@@ -41,27 +41,23 @@ a {
 p, h1, h2, h3, h4, h5, h6 {
     margin: 0;
 }
-/* remove spin buttons from number inputs */
 
+/* remove spin buttons from number inputs */
 /* For WebKit browsers (Chrome, Safari, Edge) */
 input::-webkit-outer-spin-button,
-input::-webkit-inner-spin-button
-{
+input::-webkit-inner-spin-button {
   -webkit-appearance: none;
-  margin: 0;
-    !important;
+  margin: 0 !important;
 }
 
 /* Standard property for future compatibility (less direct effect on spin buttons currently) */
 input[type="number"] {
-  appearance: none;
-    !important;
+  appearance: none !important;
 }
 
 /* For Mozilla Firefox */
 input[type="number"] {
-  -moz-appearance: textfield;
-    !important;
+  -moz-appearance: textfield !important;
 }
 
 /* Container */
@@ -138,7 +134,7 @@ header {
   display: flex;
   align-items: center;
   gap: 12px;
-    flex: 0 0 320px;
+  flex: 0 0 320px;
 }
 
 .header__auth-buttons .button {
@@ -150,7 +146,6 @@ header {
   font-size: 16px;
   font-weight: 600;
 }
-
 
 .button {
     flex: 1 1 0;
@@ -265,7 +260,6 @@ header {
   color: var(--black-main);
 }
 
-
 /* Main Content Grid */
 .main-content-grid {
     display: grid;
@@ -299,11 +293,9 @@ header {
     color: var(--black-main);
 }
 
-
 .is-hidden {
     display: none !important;
 }
-
 
 .keywords-list {
     display: flex;
@@ -485,29 +477,7 @@ header {
     font-weight: 600;
 }
 
-.product-card-in-cart {
-    width: 100%;
-    height: 40px;
-    padding: 12px;
-    background-color: var(--dark-green);
-    border: 1px solid var(--dark-green);
-    color: var(--white-text);
-    border-radius: 8px;
-    font-size: 14px;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    cursor: default;
-    transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
-}
-
-.product-card-in-cart i {
-    font-size: 14px;
-}
-
-/* Update product-card to use flexbox properly */
+/* Product Card */
 .product-card {
     padding: 16px;
     background-color: var(--background-default);
@@ -519,34 +489,7 @@ header {
     flex-direction: column;
     gap: 16px;
     position: relative;
-    min-height: 400px; 
-}
-
-.product-card-link {
-    display: flex;
-    flex-direction: column;
-    flex-grow: 1;
-    gap: 16px;
-    text-decoration: none;
-}
-
-.product-card__info {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    flex-grow: 1; 
-}
-.product-card {
-    padding: 16px;
-    background-color: var(--background-default);
-    border-radius: 8px;
-    border: 1px solid var(--border-default);
-    box-shadow: 0 2px 5px var(--black-100);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
+    min-height: 400px;
 }
 
 .product-card:hover {
@@ -566,6 +509,7 @@ header {
     display: flex;
     flex-direction: column;
     gap: 8px;
+    flex-grow: 1;
 }
 
 .product-card__name {
@@ -587,6 +531,7 @@ header {
     line-height: 1.4;
     color: var(--grey-text);
 }
+
 .product-card__rating {
     font-size: 12px;
     line-height: 1.4;
@@ -605,7 +550,6 @@ header {
     color: var(--grey-text);
     font-style: italic;
 }
-
 
 /* Pagination */
 .pagination {
@@ -727,7 +671,6 @@ footer {
     text-decoration: none;
 }
 
-
 /* Filter Tags (reusing keyword-tag base styles) */
 .filter-tag {
     padding: 8px;
@@ -765,12 +708,7 @@ footer {
     color: white;
 }
 
-
-/*
-========================================
-    Register Page Specific Styles
-========================================
-*/
+/* ========= Auth / Forms ========= */
 .auth-page-wrapper {
     position: relative;
     width: 100%;
@@ -796,29 +734,23 @@ footer {
     object-fit: cover;
 }
 
-
-
 .auth-form-container {
     position: relative;
     z-index: 2;
 }
 
-.auth-container--register {
+.auth-container--register,
+.auth-container--login,
+.auth-container--forgot-password {
     width: 416px;
-    height: auto;
     padding: 24px;
     background: var(--background-default);
     border: 1px solid var(--border-default);
     border-radius: 8px;
     display: flex;
     flex-direction: column;
-    align-items: center;
     gap: 24px;
-}
-
-.Legend {
-    width: 100%;
-    align-self: stretch;
+    align-items: center;
 }
 
 .auth-title {
@@ -836,7 +768,7 @@ footer {
 }
 
 .InputField {
-    width: 100%; /* 368px */
+    width: 100%;
     display: flex;
     flex-direction: column;
     gap: 8px;
@@ -867,7 +799,6 @@ footer {
     box-shadow: 0 0 0 3px rgba(2, 84, 45, 0.2);
 }
 
-
 .CheckboxField {
     width: 100%;
 }
@@ -897,30 +828,7 @@ footer {
     color: var(--grey-text);
 }
 
-
-/*
-========================================
-    Login Page Specific Styles
-========================================
-*/
-
-.auth-container--login {
-    width: 416px;
-    padding: 24px;
-    background: var(--background-default);
-    border: 1px solid var(--border-default);
-    border-radius: 8px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 24px;
-}
-
-.auth-container--login .auth-form {
-    gap: 24px;
-}
-
-/* Forgot password  */
+/* Forgot password link */
 .TextLink {
     width: 100%;
     text-align: left;
@@ -938,54 +846,7 @@ footer {
     text-decoration: underline;
 }
 
-
-/*
-========================================
-    Forgot Password Page Specific Styles
-========================================
-*/
-.auth-container--forgot-password {
-    width: 416px;
-    padding: 24px;
-    background: var(--background-default);
-    border: 1px solid var(--border-default);
-    border-radius: 8px;
-    display: flex;
-    flex-direction: column;
-}
-
-.auth-container--forgot-password .auth-form {
-    gap: 24px;
-}
-
-.ButtonGroup--center {
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 16px;
-}
-
-.ButtonGroup--center .button {
-    flex: 1 1 0;
-    padding: 12px;
-    height: 40px;
-}
-
-/* Button - "Cancel" */
-.button--cancel {
-    background-color: transparent;
-    color: var(--black-main);
-    font-weight: 500;
-    border: 1px solid var(--border-dark-grey);
-}
-
-.button--cancel:hover {
-    background-color: var(--slate-200);
-}
-
-
-/* User Actions (for authenticated users) */
+/* ========= User Actions (header) ========= */
 .header__user-actions {
     width: 300px;
     display: flex !important;
@@ -1077,12 +938,7 @@ footer {
     padding: 8px 16px;
 }
 
-
-/*
-========================================
-    Product Detail Page Styles
-========================================
-*/
+/* ========= Product Detail Page ========= */
 .page-product {
     background-color: var(--background-grey);
     padding: 64px 0;
@@ -1095,7 +951,6 @@ footer {
     margin-bottom: 0;
 }
 
-/* --- Product Details Section --- */
 .product-details-section {
     display: flex;
     gap: 32px;
@@ -1189,9 +1044,6 @@ footer {
 }
 
 /* --- Accordion Section  --- */
-.accordion-section {
-}
-
 .accordion-item {
     width: 640px;
     background-color: white;
@@ -1457,23 +1309,17 @@ footer {
 
 .cart-item__actions {
     display: flex;
-    gap: 12px; /* space between quantity selector and remove button */
+    gap: 12px;
 }
 
 .cart-item__actions > form {
-    flex:1;
+    flex: 1;
 }
-
-.cart-item__actions .cart-item__quantity-selector,
-.cart-item__actions .button--remove {
-  width: 100%;
-}
-
 
 .cart-item__quantity-selector,
 .button--remove {
-    flex: 1;              /* take equal width */
-    height: 44px;         /* consistent height */
+    flex: 1;
+    height: 44px;
     border-radius: 8px;
     display: flex;
     align-items: center;
@@ -1516,6 +1362,7 @@ footer {
     background: transparent;
     font-weight: 500;
 }
+
 .cart-item__total {
   display: flex;
   align-items: center;
@@ -1526,7 +1373,7 @@ footer {
   border: 1px solid var(--border-dark-grey);
   border-radius: 8px;
   height: 44px;
-  flex: 1;                 /* equal space with the two forms */
+  flex: 1;
   font-size: 18px;
   font-weight: 600;
   color: var(--black-main);
@@ -1539,15 +1386,13 @@ footer {
     cursor: pointer;
     gap: 8px;
     transition: background-color 0.2s ease, color 0.2s ease;
-    justify-content: center; /* center text + icon */
+    justify-content: center;
 }
-
 
 .button--remove:hover {
     background-color: #fbebeb;
     color: #c81e1e;
 }
-
 
 /* Cart Summary */
 .cart-summary {
@@ -1580,7 +1425,7 @@ footer {
 .summary-actions {
   display: flex;
   flex-direction: column;
-  gap: 12px;  /* space between checkout and clear */
+  gap: 12px;
   width: 100%;
 }
 
@@ -1784,8 +1629,6 @@ footer {
     line-height: 1.4;
     color: var(--black-main);
     padding: 0 10px;
-
-
 }
 
 .summary-total {
@@ -1806,21 +1649,22 @@ footer {
     padding: 12px;
 }
 
+/* Inline label/value rows in account info */
 .checkout-form-group {
   display: flex;
-  justify-content: space-between; /* label on the left, value on the right */
-  align-items: center;            /* vertical alignment */
-  gap: 1rem;                      /* spacing between label and value */
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
 }
 
 .checkout-form-group label {
-  font-weight: 500; /* or whatever you use for labels */
-  margin: 0;        /* remove default spacing */
+  font-weight: 500;
+  margin: 0;
 }
 
 .checkout-form-group div {
-  flex: 1;          /* let the value expand */
-  text-align: right; /* align value to the right */
+  flex: 1;
+  text-align: right;
 }
 
 /* Inline action buttons in user account order table */
@@ -1831,23 +1675,23 @@ footer {
 }
 
 .order-actions form {
-  margin: 0;            /* avoid default gaps in table cells */
+  margin: 0;
 }
 
 .order-actions .button {
-  flex: 0 0 auto;       /* don't stretch like in ButtonGroup */
-  height: 32px;         /* compact buttons for tables */
+  flex: 0 0 auto;
+  height: 32px;
   padding: 6px 12px;
   font-size: 14px;
   line-height: 1;
 }
 
+/* Profile image in account info */
 .profile-image-field {
   display: flex;
   align-items: center;
   gap: 16px;
 }
-
 
 .profile-image-preview {
   display: flex;
@@ -1872,17 +1716,20 @@ footer {
   cursor: pointer;
 }
 
-.profile-avatar{
-    max-height:80px;width:80px;height:80px;object-fit:cover;
-    border-radius:50%;border:1px solid var(--border-default);
-    transition:box-shadow .2s ease
+.profile-avatar {
+    max-height: 80px;
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 1px solid var(--border-default);
+    transition: box-shadow .2s ease;
 }
-.profile-avatar-label:hover .profile-avatar{box-shadow:0 0 0 3px var(--green)}
+.profile-avatar-label:hover .profile-avatar { box-shadow: 0 0 0 3px var(--green); }
 
 .profile-avatar:hover {
   border-color: var(--green);
 }
-
 
 /* Account info form fields inline, aligned like a table */
 .account-info-field {
@@ -1893,15 +1740,67 @@ footer {
 }
 
 .account-info-field label {
-  flex: 0 0 180px;   /* fixed column width */
+  flex: 0 0 180px;
   font-weight: 500;
-  text-align: right; /* align text to the right */
+  text-align: right;
 }
 
 .account-info-field input,
 .account-info-field .profile-image-field {
-  flex: 1; /* stretch input fields */
-  max-width: 400px; /* optional, keeps inputs from getting too wide */
+  flex: 1;
+  max-width: 400px;
 }
 
+/* ======= Address cards layout (2 per row) ======= */
+.address-cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
 
+.address-card {
+  flex: 1 1 calc(50% - 16px);
+  max-width: calc(50% - 16px);
+  background-color: var(--background-default);
+  border: 1px solid var(--border-default);
+  border-radius: 8px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.address-card__fields {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Default checkbox row */
+.address-card__default {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+/* Card footer with inline Save/Delete */
+.address-card__footer {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.address-card__footer form {
+  margin: 0;
+}
+
+/* Stack address cards on small screens */
+@media (max-width: 720px) {
+  .address-card {
+    flex: 1 1 100%;
+    max-width: 100%;
+  }
+}

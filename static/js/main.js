@@ -383,3 +383,13 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 });
+
+// Ensure only one "Set as default" checkbox is checked among address cards
+document.addEventListener('change', function (e) {
+  if (e.target && e.target.classList.contains('addr-default-toggle')) {
+    // Uncheck other default checkboxes
+    document.querySelectorAll('.addr-default-toggle').forEach(cb => {
+      if (cb !== e.target) cb.checked = false;
+    });
+  }
+});

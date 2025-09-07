@@ -56,34 +56,102 @@
               <button type="submit" class="button button--primary">Save</button>
           </form>
       </section>
-      <!-- ========== Shipping Addresses ========== -->
-      <section class="checkout-section">
-          <h2 class="checkout-section__title">Shipping Addresses</h2>
-          {% if addresses %}
-              {% for addr in addresses %}
-                  <div class="summary-item">
-                      <div class="summary-item__left">
-                          <p class="summary-item__name">
-                              {{ addr.address_line_1 }}{% if addr.address_line_2 %}, {{ addr.address_line_2 }}{% endif %}
-                          </p>
-                          <p class="summary-item__meta">
-                              {{ addr.postal_code }}, {{ addr.city }}, {{ addr.country }}
-                          </p>
-                      </div>
-                      <div class="summary-item__meta">
-                          {% if addr.default %}<span class="price-tag">Default</span>{% endif %}
-                      </div>
-                  </div>
-              {% endfor %}
-          {% else %}
-              <div class="summary-item">
-                  <p class="summary-item__name">No shipping addresses saved.</p>
-              </div>
-          {% endif %}
-          <a href="{% url 'users:address_add' %}"
-             class="button button--primary">+ Add Address
-          </a>
-      </section>
+<!-- ========== Shipping Addresses (cards with editable fields) ========== -->
+<section class="checkout-section">
+  <h2 class="checkout-section__title">Shipping Addresses</h2>
+
+  <div class="address-cards">
+    {% if addresses %}
+      {% for addr in addresses %}
+        <form class="address-card" method="post" action="{% url 'users:address_update' addr.id %}">
+          {% csrf_token %}
+
+          <div class="address-card__fields">
+            <div class="account-info-field">
+              <label for="address_line_1_{{ addr.id }}">Address line 1:</label>
+              <input
+                type="text"
+                id="address_line_1_{{ addr.id }}"
+                name="address_line_1"
+                class="Input"
+                value="{{ addr.address_line_1 }}"
+                required>
+            </div>
+
+            <div class="account-info-field">
+              <label for="address_line_2_{{ addr.id }}">Address line 2:</label>
+              <input
+                type="text"
+                id="address_line_2_{{ addr.id }}"
+                name="address_line_2"
+                class="Input"
+                value="{{ addr.address_line_2 }}">
+            </div>
+
+            <div class="account-info-field">
+              <label for="postal_code_{{ addr.id }}">Postal code:</label>
+              <input
+                type="text"
+                id="postal_code_{{ addr.id }}"
+                name="postal_code"
+                class="Input"
+                value="{{ addr.postal_code }}"
+                required>
+            </div>
+
+            <div class="account-info-field">
+              <label for="city_{{ addr.id }}">City:</label>
+              <input
+                type="text"
+                id="city_{{ addr.id }}"
+                name="city"
+                class="Input"
+                value="{{ addr.city }}"
+                required>
+            </div>
+
+            <div class="account-info-field">
+              <label for="country_{{ addr.id }}">Country:</label>
+              <input
+                type="text"
+                id="country_{{ addr.id }}"
+                name="country"
+                class="Input"
+                value="{{ addr.country }}"
+                required>
+            </div>
+
+            <div class="address-card__default">
+              <input
+                type="checkbox"
+                id="default_{{ addr.id }}"
+                class="addr-default-toggle"
+                name="default"
+                value="1"
+                {% if addr.default %}checked{% endif %}>
+              <label for="default_{{ addr.id }}">Set as default</label>
+            </div>
+          </div>
+
+          <div class="address-card__footer">
+            <button type="submit" class="button button--primary">Save</button>
+            <button
+              type="submit"
+              class="button button--secondary"
+              formmethod="post"
+              formaction="{% url 'users:address_delete' addr.id %}">
+              Delete
+            </button>
+          </div>
+        </form>
+      {% endfor %}
+    {% else %}
+      <p>No shipping addresses saved.</p>
+    {% endif %}
+  </div>
+
+  <a href="{% url 'users:address_add' %}" class="button button--primary">+ Add Address</a>
+</section>
       <!-- ========== Order History  ========== -->
       <section class="checkout-section">
           <h2 class="checkout-section__title">Order History</h2>

@@ -3,7 +3,7 @@ from django.views.generic import CreateView, TemplateView
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import transaction
-from django.shortcuts import redirect, render
+from django.shortcuts import redirect, render, get_object_or_404
 from django.urls import reverse_lazy
 
 from orders.models import OrderStatus, Order
@@ -121,3 +121,74 @@ def account_view(request):
             "OrderStatus": OrderStatus,
         },
     )
+
+
+@login_required(login_url="users:login")
+def address_update(request, pk: int):
+    """
+    Update an existing address card. If 'default' is checked, make this the only default.
+    If 'default' is not provided, we keep the existing default as-is (no forced unsetting).
+    """
+    if request.method != "POST":
+        return redirect("users:account")
+
+    addr = get_object_or_404(ShippingAddress, pk=pk, user=request.user)
+
+    address_line_1 = (request.POST.get("address_line_1") or "").strip()
+    address_line_2 = (request.POST.get("address_line_2") or "").strip()
+    postal_code = (request.POST.get("postal_code") or "").strip()
+    city = (request.POST.get("city") or "").strip()
+    country = (request.POST.get("country") or "").strip()
+    want_default = request.POST.get("default") == "1"
+
+    if not address_line_1 or not postal_code or not city or not country:
+        messages.error(request, "Please fill in all required address fields.")
+        return redirect("users:account")
+
+    with transaction.atomic():
+        # Update fields
+        addr.address_line_1 = address_line_1
+        addr.address_line_2 = address_line_2
+        addr.postal_code = postal_code
+        addr.city = city
+        addr.country = country
+
+        # Handle default flag
+        if want_default:
+            ShippingAddress.objects.filter(user=request.user, default=True).exclude(
+                pk=addr.pk
+            ).update(default=False)
+            addr.default = True
+        # If not checked, leave default as-is to avoid removing the only default by accident.
+
+        addr.save()
+
+    messages.success(request, "Address saved.")
+    return redirect("users:account")
+
+
+@login_required(login_url="users:login")
+def address_delete(request, pk: int):
+    """
+    Delete an address. If it was the default, assign default to another existing address (if any).
+    """
+    if request.method != "POST":
+        return redirect("users:account")
+
+    addr = get_object_or_404(ShippingAddress, pk=pk, user=request.user)
+    was_default = addr.default
+
+    with transaction.atomic():
+        addr.delete()
+        if was_default:
+            replacement = (
+                ShippingAddress.objects.filter(user=request.user)
+                .order_by("-id")
+                .first()
+            )
+            if replacement:
+                replacement.default = True
+                replacement.save(update_fields=["default"])
+
+    messages.success(request, "Address deleted.")
+    return redirect("users:account")
