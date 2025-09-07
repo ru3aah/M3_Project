@@ -6,7 +6,7 @@ from django.db import transaction
 from django.shortcuts import redirect, render, get_object_or_404
 from django.urls import reverse_lazy
 
-from orders.models import OrderStatus, Order
+from orders.models import OrderStatus, Order, PaymentMethod
 from .forms import ShippingAddressForm
 from .models import ShippingAddress
 from users.forms import UserRegistrationForm
@@ -119,6 +119,7 @@ def account_view(request):
             "addresses": addresses,
             "orders": orders,
             "OrderStatus": OrderStatus,
+            "PaymentMethod": PaymentMethod,
         },
     )
 
