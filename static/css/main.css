@@ -1823,8 +1823,85 @@ footer {
   text-align: right; /* align value to the right */
 }
 
-/*
+/* Inline action buttons in user account order table */
+.order-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.order-actions form {
+  margin: 0;            /* avoid default gaps in table cells */
+}
+
+.order-actions .button {
+  flex: 0 0 auto;       /* don't stretch like in ButtonGroup */
+  height: 32px;         /* compact buttons for tables */
+  padding: 6px 12px;
+  font-size: 14px;
+  line-height: 1;
+}
+
+.profile-image-field {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
 
 
+.profile-image-preview {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.profile-avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--border-default);
+  transition: border-color 0.2s ease;
+}
+
+.profile-image-input {
+  display: none; /* hide the file input */
+}
+
+.profile-avatar-label {
+  cursor: pointer;
+}
+
+.profile-avatar{
+    max-height:80px;width:80px;height:80px;object-fit:cover;
+    border-radius:50%;border:1px solid var(--border-default);
+    transition:box-shadow .2s ease
+}
+.profile-avatar-label:hover .profile-avatar{box-shadow:0 0 0 3px var(--green)}
+
+.profile-avatar:hover {
+  border-color: var(--green);
+}
+
+
+/* Account info form fields inline, aligned like a table */
+.account-info-field {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.account-info-field label {
+  flex: 0 0 180px;   /* fixed column width */
+  font-weight: 500;
+  text-align: right; /* align text to the right */
+}
+
+.account-info-field input,
+.account-info-field .profile-image-field {
+  flex: 1; /* stretch input fields */
+  max-width: 400px; /* optional, keeps inputs from getting too wide */
+}
 
 

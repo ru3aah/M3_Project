@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.db import transaction
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.generic import TemplateView
-from django.views.decorators.http import require_http_methods
+from django.views.decorators.http import require_http_methods, require_POST
 
 from .cart import Cart
 from .forms import CheckoutForm
@@ -280,3 +280,32 @@ def order_success(request, order_id: int):
     Keep existing route working, but show the new details page.
     """
     return redirect("orders:order_details", order_id=order_id)
+
+@login_required(login_url="users:login")
+@require_POST
+def pay_order(request, order_id):
+    order = get_object_or_404(Order, id=order_id, user=request.user)
+
+    if order.status != OrderStatus.PENDING:
+        messages.error(request, "Only pending orders can be paid.")
+    else:
+        order.status = OrderStatus.PAID
+        order.save(update_fields=["status"])
+        messages.success(request, f"Order #{order.id} has been paid.")
+
+    return redirect("users:account")
+
+
+@login_required(login_url="users:login")
+@require_POST
+def cancel_order(request, order_id):
+    order = get_object_or_404(Order, id=order_id, user=request.user)
+
+    if order.status not in [OrderStatus.PENDING, OrderStatus.PAID]:
+        messages.error(request, "This order cannot be canceled.")
+    else:
+        order.status = OrderStatus.CANCELLED
+        order.save(update_fields=["status"])
+        messages.success(request, f"Order #{order.id} has been canceled.")
+
+    return redirect("users:account")

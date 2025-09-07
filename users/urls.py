@@ -18,7 +18,7 @@ urlpatterns = [
         ),
         name="login",
     ),
-    path("account/", views.UserAccountView.as_view(), name="account"),
+    path("account/", views.account_view, name="account"),
     path(
         "logout/", LogoutView.as_view(next_page="products:product-list"), name="logout"
     ),

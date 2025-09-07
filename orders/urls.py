@@ -1,5 +1,6 @@
 from django.urls import path
 
+from orders import views
 from orders.views import (
     cart_order_add,
     CartDetail,
@@ -20,4 +21,6 @@ urlpatterns = [
     path("checkout/", checkout, name="checkout"),
     path("order-success/<int:order_id>/", order_success, name="order_success"),
     path("orders/<int:order_id>/", order_details, name="order_details"),
+    path("<int:order_id>/pay/", views.pay_order, name="pay_order"),
+    path("<int:order_id>/cancel/", views.cancel_order, name="cancel_order"),
 ]

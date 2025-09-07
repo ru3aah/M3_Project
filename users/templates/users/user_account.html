@@ -1,0 +1,175 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}My Account | Hop & Barley{% endblock %}
+
+{% block content %}
+<main class="account-page-wrapper">
+  <div class="account-container">
+    <h1 class="checkout-title">My Account</h1>
+      <!-- ========== Account Information (inline labels, editable, with image) ========== -->
+      <section class="checkout-section">
+          <h2 class="checkout-section__title">Account Information</h2>
+          <form method="post" enctype="multipart/form-data">
+              {% csrf_token %}
+              <div class="account-info-field">
+                  <label for="first_name">First name:</label>
+                  <input type="text" id="first_name"
+                         name="first_name" value="{{ user_obj.first_name }}">
+              </div>
+              <div class="account-info-field">
+                  <label for="last_name">Last name:</label>
+                  <input type="text" id="last_name" name="last_name"
+                         value="{{ user_obj.last_name }}">
+              </div>
+              <div class="account-info-field">
+                  <label for="email">Email:</label>
+                  <input type="email" id="email" name="email"
+                         value="{{ user_obj.email }}">
+              </div>
+              <div class="account-info-field">
+                  <label for="phone">Phone:</label>
+                  <input type="text" id="phone" name="phone"
+                         value="{{ user_obj.phone }}">
+              </div>
+              <div class="account-info-field">
+                  <label for="username">Username:</label>
+                  <input type="text" id="username" name="username"
+                         value="{{ user_obj.username }}">
+              </div>
+              <div class="account-info-field">
+                  <label for="image">Profile image:</label>
+                  <div class="profile-image-field">
+                      <input id="image" name="image" type="file"
+                             accept="image/*" class="profile-image-input">
+                      <label for="image" class="profile-avatar-label">
+                          {% if user_obj.image %}
+                              <img src="{{ user_obj.image.url }}"
+                                   alt="Profile image" class="profile-avatar">
+                          {% else %}
+                              <img src="{% static 'img/avatars/default-avatar.png' %}"
+                                   alt="Default avatar" class="profile-avatar">
+                          {% endif %}
+                      </label>
+                  </div>
+              </div>
+              <button type="submit" class="button button--primary">Save</button>
+          </form>
+      </section>
+      <!-- ========== Shipping Addresses ========== -->
+      <section class="checkout-section">
+          <h2 class="checkout-section__title">Shipping Addresses</h2>
+          {% if addresses %}
+              {% for addr in addresses %}
+                  <div class="summary-item">
+                      <div class="summary-item__left">
+                          <p class="summary-item__name">
+                              {{ addr.address_line_1 }}{% if addr.address_line_2 %}, {{ addr.address_line_2 }}{% endif %}
+                          </p>
+                          <p class="summary-item__meta">
+                              {{ addr.postal_code }}, {{ addr.city }}, {{ addr.country }}
+                          </p>
+                      </div>
+                      <div class="summary-item__meta">
+                          {% if addr.default %}<span class="price-tag">Default</span>{% endif %}
+                      </div>
+                  </div>
+              {% endfor %}
+          {% else %}
+              <div class="summary-item">
+                  <p class="summary-item__name">No shipping addresses saved.</p>
+              </div>
+          {% endif %}
+          <a href="{% url 'users:address_add' %}"
+             class="button button--primary">+ Add Address
+          </a>
+      </section>
+      <!-- ========== Order History  ========== -->
+      <section class="checkout-section">
+          <h2 class="checkout-section__title">Order History</h2>
+          <table>
+              <thead>
+              <tr>
+                  <th scope="col">Order</th>
+                  <th scope="col">Status</th>
+                  <th scope="col">Total</th>
+                  <th scope="col">Payment</th>
+                  <th scope="col">Shipping Address</th>
+                  <th scope="col">Actions</th>
+              </tr>
+              </thead>
+              <tbody>
+              {% for order in orders %}
+                  <tr>
+                      <!-- Order -->
+                      <td>
+                          <a href="{% url 'orders:order_details' order.id %}">
+                              <strong>#{{ order.id }}</strong>
+                          </a><br>
+                          <span>{{ order.created_at|date:"j M Y" }}</span>
+                      </td>
+                      <!-- Status -->
+                      <td>{{ order.get_status_display }}</td>
+                      <!-- Total -->
+                      <td>{{ order.currency }} {{ order.total_price }}</td>
+                      <!-- Payment -->
+                      <td>{{ order.get_payment_method_display }}</td>
+                      <!-- Shipping Address (snapshot first; clean commas) -->
+                      <td>
+                          {% if order.ship_address_line1 or order.ship_address_line2 or order.ship_postal_code or order.ship_city or order.ship_country %}
+                              {% if order.ship_address_line1 %}
+                                  {{ order.ship_address_line1 }}{% endif %}
+                              {% if order.ship_address_line2 %}
+                                  {% if order.ship_address_line1 %},
+                                  {% endif %}{{ order.ship_address_line2 }}
+                              {% endif %}
+                              {% if order.ship_postal_code %}
+                                  {% if order.ship_address_line1 or order.ship_address_line2 %},
+                                  {% endif %}{{ order.ship_postal_code }}
+                              {% endif %}
+                              {% if order.ship_city %}
+                                  {% if order.ship_address_line1 or order.ship_address_line2 or order.ship_postal_code %},
+                                  {% endif %}{{ order.ship_city }}{% endif %}
+                              {% if order.ship_country %}
+                                  {% if order.ship_address_line1 or order.ship_address_line2 or order.ship_postal_code or order.ship_city %},
+                                  {% endif %}{{ order.ship_country }}
+                              {% endif %}
+                          {% elif order.shipping_address %}
+                              {{ order.shipping_address }}
+                          {% else %} — {% endif %}
+                      </td>
+                      <!-- Actions -->
+                      <td>
+                          {% if order.status == OrderStatus.PENDING %}
+                              <div class="order-actions">
+                                  <form method="post"
+                                        action="{% url 'orders:pay_order' order.id %}">
+                                      {% csrf_token %}
+                                      <button type="submit"
+                                              class="button button--primary">Pay
+                                      </button>
+                                  </form>
+                                  <form method="post"
+                                        action="{% url 'orders:cancel_order' order.id %}">
+                                      {% csrf_token %}
+                                      <button type="submit"
+                                              class="button button--secondary">Cancel
+                                      </button>
+                                  </form>
+                              </div>
+                          {% else %}—{% endif %}
+                      </td>
+                  </tr>
+              {% empty %}
+                  <tr>
+                      <td colspan="6">No orders yet.</td>
+                  </tr>
+              {% endfor %}
+              </tbody>
+          </table>
+      </section>
+
+
+  </div>
+</main>
+{% endblock %}

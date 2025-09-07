@@ -368,3 +368,18 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 });
+
+// ===== Profile image (avatar) preview on select =====
+document.addEventListener('DOMContentLoaded', function () {
+  const fileInput = document.querySelector('.profile-image-input');
+  const avatarImg = document.querySelector('.profile-avatar');
+
+  if (fileInput && avatarImg) {
+    fileInput.addEventListener('change', function () {
+      const [file] = fileInput.files || [];
+      if (file) {
+        avatarImg.src = URL.createObjectURL(file);
+      }
+    });
+  }
+});
