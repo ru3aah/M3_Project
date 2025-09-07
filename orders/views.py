@@ -189,13 +189,6 @@ def _update_user_from_checkout(user, full_name: str, phone: str) -> None:
         user.save()
 
 
-from django.contrib.auth.decorators import login_required
-from django.shortcuts import render, redirect, get_object_or_404
-from django.utils import timezone
-
-# ... keep your existing imports and code ...
-
-
 @login_required(login_url="users:login")
 def order_details(request, order_id: int):
     """
@@ -252,6 +245,14 @@ def order_details(request, order_id: int):
         "total_price": order.total_price,
         "currency": order.currency,
         "status": order.get_status_display(),  # human label
+        # expose raw codes (lowercase, per models.py)
+        "payment_method_code": order.payment_method,  # 'card' | 'wallet' | 'cod'
+        "status_code": order.status,  # 'pending' | 'paid' | ...
+        # convenience boolean for the template
+        "show_proceed_to_payment": (
+            order.status == OrderStatus.PENDING
+            and order.payment_method in {PaymentMethod.CARD, PaymentMethod.WALLET}
+        ),
         # 2) User details
         "user_full_name": order.ship_full_name
         or (
@@ -280,6 +281,7 @@ def order_success(request, order_id: int):
     Keep existing route working, but show the new details page.
     """
     return redirect("orders:order_details", order_id=order_id)
+
 
 @login_required(login_url="users:login")
 @require_POST
