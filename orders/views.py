@@ -1,7 +1,10 @@
 from decimal import Decimal
 from django.contrib import messages
+from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator
 from django.db import transaction
+from django.db.models import Q
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.generic import TemplateView
 from django.views.decorators.http import require_http_methods, require_POST
@@ -258,11 +261,12 @@ def order_details(request, order_id: int):
       4) Payment method
       5) Item list with product, unit price, qty, measure unit, line subtotal
     """
-    order = get_object_or_404(
-        Order.objects.select_related("user", "shipping_address"),
-        id=order_id,
-        user=request.user,
-    )
+    qs = OrderItem.objects.select_related("user", "shipping_address")
+
+    if request.user.is_staff:
+        order = get_object_or_404(qs, id=order_id)
+    else:
+        order = get_object_or_404(qs, id=order_id, user=request.user)
 
     items = order.items.select_related("product").all()
 
@@ -377,3 +381,119 @@ def cancel_order(request, order_id):
             messages.error(request, "This order cannot be canceled.")
 
     return redirect("users:account")
+
+
+@staff_member_required
+def manage_orders(request):
+    """
+    Admin-only page to view and manage orders.
+    - Filter/search by q (user/order), status, payment
+    - Paginate results
+    - Display grouped by user -> status for the current page
+    - Update status (emails are sent by signals on change)
+    """
+    if request.method == "POST":
+        order_id = request.POST.get("order_id")
+        new_status = request.POST.get("status")
+
+        order = get_object_or_404(Order.objects.select_related("user"), id=order_id)
+
+        valid_statuses = {code for code, _ in OrderStatus.choices}
+        if new_status not in valid_statuses:
+            messages.error(request, "Invalid status value.")
+            return redirect("orders:manage_orders")
+
+        if order.status == new_status:
+            messages.info(
+                request, f"Order #{order.id} is already {order.get_status_display()}."
+            )
+            return redirect("orders:manage_orders")
+
+        # If cancelling, restock (mirrors cancel_order logic)
+        if new_status == OrderStatus.CANCELLED and order.status in [
+            OrderStatus.PENDING,
+            OrderStatus.PAID,
+        ]:
+            with transaction.atomic():
+                order.status = new_status
+                order.save(update_fields=["status"])
+                touched = []
+                for item in order.items.select_related("product").all():
+                    p = item.product
+                    p.stock = int(p.stock) + int(item.quantity)
+                    touched.append(p)
+                if touched:
+                    Product.objects.bulk_update(touched, ["stock"])
+        else:
+            order.status = new_status
+            order.save(update_fields=["status"])
+
+        messages.success(
+            request,
+            f"Order #{order.id} status changed to "
+            f"{order.get_status_display()} and customer notified.",
+        )
+        return redirect("orders:manage_orders")
+
+    # --- Filters / search ---
+    q = (request.GET.get("q") or "").strip()
+    status = (request.GET.get("status") or "").strip()
+    payment = (request.GET.get("payment") or "").strip()
+
+    qs = Order.objects.select_related("user").order_by("-created_at")
+
+    if q:
+        # search by order id or user fields
+        numeric_id = None
+        try:
+            numeric_id = int(q.lstrip("#"))
+        except (TypeError, ValueError):
+            pass
+
+        qs = qs.filter(
+            Q(id=numeric_id)
+            | Q(user__email__icontains=q)
+            | Q(user__username__icontains=q)
+            | Q(user__first_name__icontains=q)
+            | Q(user__last_name__icontains=q)
+        )
+
+    if status:
+        qs = qs.filter(status=status)
+
+    if payment:
+        qs = qs.filter(payment_method=payment)
+
+    # --- Pagination ---
+    per_page = 25
+    paginator = Paginator(qs, per_page)
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+    page_orders = page_obj.object_list
+
+    # Group current page by user -> status
+    grouped = {}  # user_id -> {'user': user, 'by_status': {status_code: [
+    # orders...]}}
+    for o in page_orders:
+        user = o.user
+        uid = user.id if user else 0
+        if uid not in grouped:
+            grouped[uid] = {"user": user, "by_status": {}}
+        grouped[uid]["by_status"].setdefault(o.status, []).append(o)
+
+    status_list = list(OrderStatus)
+    payment_list = list(PaymentMethod)
+
+    return render(
+        request,
+        "orders/manage_orders.html",
+        {
+            "grouped": grouped,
+            "status_list": status_list,
+            "payment_list": payment_list,
+            "page_obj": page_obj,
+            "q": q,
+            "status": status,
+            "payment": payment,
+        },
+    )

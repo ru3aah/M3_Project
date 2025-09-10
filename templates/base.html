@@ -22,7 +22,6 @@
           crossorigin="anonymous"
           referrerpolicy="no-referrer" />
 
-    <!-- Link to your main CSS file -->
     <link rel="stylesheet" href="{% static 'css/main.css' %}">
 </head>
 <body>
@@ -51,6 +50,15 @@
         {% if user.is_authenticated %}
         <!-- Block for authorized user -->
         <div class="header__user-actions">
+
+            {% if user.is_staff %}
+            <div class="admin-section">
+                <a href="{% url 'orders:manage_orders' %}" class="button button--secondary">
+                    Manage All Orders
+                </a>
+            </div>
+            {% endif %}
+
             <div class="user-account-section">
                 <a href="{% url 'users:account' %}"
                    class="user-icon" aria-label="My Account">
@@ -136,7 +144,6 @@
 </script>
 {% endif %}
 
-<!-- Link to your main JavaScript file -->
 <script src="{% static 'js/main.js' %}"></script>
 </body>
 </html>
