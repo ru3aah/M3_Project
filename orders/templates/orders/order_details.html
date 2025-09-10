@@ -91,21 +91,24 @@
     </section>
 
     <!-- Actions (card; buttons reuse existing .button styles) -->
-    <section class="checkout-section">
-      <div class="summary-actions">
-        <a href="{% url 'products:product-list' %}" class="button button--secondary button--block">
-          Continue Shopping
-        </a>
-        {% if show_proceed_to_payment %}
-          <form method="post" action="{% url 'orders:pay_order' order_number %}">
-            {% csrf_token %}
-            <button type="submit" class="button button--primary button--block">
-              Proceed to Payment
-            </button>
-          </form>
-        {% endif %}
-      </div>
-    </section>
+<section class="checkout-section">
+  <div class="summary-actions">
+    <a href="{% url 'products:product-list' %}" class="button button--secondary button--block">
+      Continue Shopping
+    </a>
+    <a href="{% url 'users:account' %}" class="button button--secondary button--block">
+      To User Account
+    </a>
+    {% if show_proceed_to_payment %}
+      <form method="post" action="{% url 'orders:pay_order' order_number %}">
+        {% csrf_token %}
+        <button type="submit" class="button button--primary button--block">
+          Proceed to Payment
+        </button>
+      </form>
+    {% endif %}
+  </div>
+</section>
   </div>
 </main>
 {% endblock %}
