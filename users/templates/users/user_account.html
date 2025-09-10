@@ -7,7 +7,7 @@
 <main class="account-page-wrapper">
   <div class="account-container">
     <h1 class="checkout-title">My Account</h1>
-      <!-- ========== Account Information (inline labels, editable, with image) ========== -->
+      <!-- ========== Account Information  ========== -->
       <section class="checkout-section">
           <h2 class="checkout-section__title">Account Information</h2>
           <form method="post" enctype="multipart/form-data">
@@ -56,9 +56,11 @@
               <button type="submit" class="button button--primary">Save</button>
           </form>
       </section>
-<!-- ========== Shipping Addresses (cards with editable fields) ========== -->
-<section class="checkout-section">
-  <h2 class="checkout-section__title">Shipping Addresses</h2>
+<!-- ========== Shipping Addresses (collapsible, cards with editable fields) ========== -->
+<details class="checkout-section">
+  <summary class="checkout-section__title" style="cursor:pointer; list-style:none;">
+    Shipping Addresses
+  </summary>
 
   <div class="address-cards">
     {% if addresses %}
@@ -151,7 +153,7 @@
   </div>
 
   <a href="{% url 'users:address_add' %}" class="button button--primary">+ Add Address</a>
-</section>
+</details>
       <!-- ========== Order History  ========== -->
       <section class="checkout-section">
           <h2 class="checkout-section__title">Order History</h2>
