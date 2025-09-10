@@ -21,6 +21,17 @@ from .models import (
 
 
 class CartDetail(TemplateView):
+    """
+    Representation of the CartDetail view for rendering the cart details of an order.
+
+    This class extends TemplateView and is specifically designed to render the
+    cart detail template located at "orders/cart_detail.html". It is used to
+    display the details of a user's cart within an order management system.
+
+    :ivar template_name: The path to the HTML template used by this view.
+    :type template_name: str
+    """
+
     template_name = "orders/cart_detail.html"
 
 

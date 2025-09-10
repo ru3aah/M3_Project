@@ -13,6 +13,23 @@ from users.forms import UserRegistrationForm
 
 
 class UserCreateView(CreateView):
+    """
+    Represents a view for creating a new user.
+
+    This class-based view is responsible for handling user registration. It uses
+    a specified form for user registration, renders a template for the registration
+    page, and redirects to a specified URL upon successful registration.
+
+    :ivar form_class: The form class used for rendering and validating the user
+        registration form.
+    :type form_class: Type[BaseForm]
+    :ivar template_name: The path to the template used for rendering the registration page.
+    :type template_name: str
+    :ivar success_url: The URL to which the user is redirected after successfully
+        registering.
+    :type success_url: str
+    """
+
     form_class = UserRegistrationForm
     template_name = "users/register.html"
     success_url = reverse_lazy("users:login")
@@ -23,6 +40,28 @@ class UserAccountView(TemplateView):
 
 
 class ShippingAddressCreateView(LoginRequiredMixin, CreateView):
+    """
+    Handles the creation and management of shipping addresses for the logged-in user.
+
+    This view allows users to create a new shipping address and automatically sets
+    it as the default address for the user. If there is already a default shipping
+    address, it updates the previous default to non-default. Ensures that only logged-in
+    users can access this functionality.
+
+    The view uses a transaction to ensure that the operation is atomic, i.e.,
+    either all database modifications occur, or none do. Upon successful saving,
+    it redirects the user to a specified success URL.
+
+    :ivar model: The model associated with this view.
+    :type model: ShippingAddress
+    :ivar form_class: The form class used for creating a shipping address.
+    :type form_class: type[ShippingAddressForm]
+    :ivar template_name: The template used to render the form view.
+    :type template_name: str
+    :ivar login_url: The login URL for unauthenticated users.
+    :type login_url: str
+    """
+
     model = ShippingAddress
     form_class = ShippingAddressForm
     template_name = "users/address_form.html"
@@ -38,7 +77,7 @@ class ShippingAddressCreateView(LoginRequiredMixin, CreateView):
             form.instance.default = True
             self.object = form.save()
 
-        messages.success(self.request, "Shipping address saved and set as default.")
+        messages.success(self.request, "Shipping address saved and set as " "default.")
         return redirect(self.get_success_url())
 
     def get_success_url(self):
