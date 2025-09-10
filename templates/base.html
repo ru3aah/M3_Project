@@ -123,6 +123,19 @@
     <p class="footer__copyright">© Hop & Barley 2025. All rights reserved</p>
 </footer>
 
+<!-- Toast container -->
+<div id="toast-container" aria-live="polite" aria-atomic="true"></div>
+
+{% if messages %}
+<script>
+  window.__DJANGO_MESSAGES__ = [
+    {% for message in messages %}
+      { level: "{{ message.level_tag }}", text: "{{ message|escapejs }}" }{% if not forloop.last %},{% endif %}
+    {% endfor %}
+  ];
+</script>
+{% endif %}
+
 <!-- Link to your main JavaScript file -->
 <script src="{% static 'js/main.js' %}"></script>
 </body>

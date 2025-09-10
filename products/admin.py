@@ -9,6 +9,7 @@ class ProductTechSpecInline(admin.TabularInline):
     fields = ("tech_spec",)
 
 
+@admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
     """
     The ProductAdmin class is used to define the administrative interface
@@ -55,6 +56,7 @@ class ProductAdmin(admin.ModelAdmin):
     tech_specs_count.short_description = "Tech Specs"
 
 
+@admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
     """
     Represents the administrative interface for managing Category objects.
@@ -87,6 +89,7 @@ class CategoryAdmin(admin.ModelAdmin):
     list_filter = ("parent",)
 
 
+@admin.register(ProductReview)
 class ProductReviewAdmin(admin.ModelAdmin):
     list_display = (
         "product",
@@ -106,14 +109,9 @@ class ProductReviewAdmin(admin.ModelAdmin):
     list_per_page = 25
 
 
+@admin.register(ProductTechSpec)
 class ProductTechSpecAdmin(admin.ModelAdmin):
     list_display = (
         "product",
         "tech_spec",
     )
-
-
-admin.site.register(Product, ProductAdmin)
-admin.site.register(Category, CategoryAdmin)
-admin.site.register(ProductReview, ProductReviewAdmin)
-admin.site.register(ProductTechSpec)
