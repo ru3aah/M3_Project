@@ -27,6 +27,9 @@ class Order(JournalizedModel):
         blank=True,
     )
 
+    updated_at = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
     shipping_address = models.ForeignKey(
         ShippingAddress,
         on_delete=models.PROTECT,

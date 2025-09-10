@@ -1,13 +1,18 @@
 import os
 from pathlib import Path
-
 from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Load base env first (if present), then local overrides
+# --- Load env files ---
+# Always load base .env (local dev defaults)
 load_dotenv(BASE_DIR / ".env")
-load_dotenv(BASE_DIR / ".env.local", override=True)
+
+# Load .env.local ONLY inside Docker or when explicitly enabled
+IN_DOCKER = os.path.exists("/.dockerenv")
+READ_LOCAL = os.getenv("DJANGO_READ_DOTENV_LOCAL", "0") == "1"
+if IN_DOCKER or READ_LOCAL:
+    load_dotenv(BASE_DIR / ".env.local", override=True)
 
 # --- Core ---
 SECRET_KEY = os.getenv("SECRET_KEY", "unsafe-dev-secret")
@@ -67,7 +72,9 @@ TEMPLATES = [
 WSGI_APPLICATION = "config.wsgi.application"
 
 # --- Database ---
-if os.getenv("POSTGRES_HOST"):
+USE_POSTGRES = os.getenv("USE_POSTGRES", "0") == "1"
+
+if USE_POSTGRES:
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.postgresql",
@@ -89,7 +96,7 @@ else:
 AUTH_PASSWORD_VALIDATORS = [
     {
         "NAME": "django.contrib.auth.password_validation"
-        ".UserAttributeSimilarityValidator",
+        ".UserAttributeSimilarityValidator"
     },
     {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
     {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
