@@ -1,0 +1,153 @@
+ {% extends "base.html" %}
+{% load static %}
+{% load dict_extras %}
+
+{% block title %}Manage Orders | Hop & Barley{% endblock %}
+
+{% block content %}
+<main class="checkout-page-wrapper">
+  <div class="checkout-container">
+    <h1 class="checkout-title">Manage Orders</h1>
+
+    <!-- Filters / Search -->
+    <section class="checkout-section">
+      <form method="get" style="display:flex; gap:12px; flex-wrap:wrap; align-items:flex-end;">
+        <div style="display:flex; flex-direction:column; gap:6px;">
+          <label for="q">Search (order # / user)</label>
+          <input id="q" type="text" name="q" value="{{ q }}" class="Input" placeholder="#123, email, username, name" style="width:260px;">
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:6px;">
+          <label for="status">Status</label>
+          <select id="status" name="status" class="Input" style="height:40px; width:200px;">
+            <option value="">All</option>
+            {% for st in status_list %}
+              <option value="{{ st.value }}" {% if st.value == status %}selected{% endif %}>{{ st.label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:6px;">
+          <label for="payment">Payment</label>
+          <select id="payment" name="payment" class="Input" style="height:40px; width:220px;">
+            <option value="">All</option>
+            {% for pm in payment_list %}
+              <option value="{{ pm.value }}" {% if pm.value == payment %}selected{% endif %}>{{ pm.label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div style="display:flex; gap:8px;">
+          <button type="submit" class="button button--primary" style="height:40px; padding:0 16px;">Apply</button>
+          <a href="{% url 'orders:manage_orders' %}" class="button button--secondary" style="height:40px; padding:0 16px;">Reset</a>
+        </div>
+      </form>
+    </section>
+
+    {% if grouped %}
+      {% for uid, pack in grouped.items %}
+        <section class="checkout-section">
+          <h2 class="checkout-section__title">
+            {% if pack.user %}
+              {{ pack.user.get_full_name|default:pack.user.email|default:pack.user.username }}
+              <span style="color:#757575; font-weight:normal;">(ID: {{ pack.user.id }})</span>
+            {% else %}
+              Guest Orders
+            {% endif %}
+          </h2>
+
+          {% for s in status_list %}
+            {% with orders_list=pack.by_status|get_item:s.value %}
+              {% if orders_list %}
+                <h3 style="margin:8px 0 12px 0;">
+                  Status: {{ s.label }}
+                </h3>
+                <div class="summary-items">
+                  <table style="width:100%; border-collapse:collapse;">
+                    <thead>
+                      <tr style="text-align:left; border-bottom:1px solid #d9d9d9;">
+                        <th style="padding:8px;">Order</th>
+                        <th style="padding:8px;">Placed</th>
+                        <th style="padding:8px;">Total</th>
+                        <th style="padding:8px;">Payment</th>
+                        <th style="padding:8px;">Change Status</th>
+                        <th style="padding:8px;">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {% for order in orders_list %}
+                        <tr style="border-bottom:1px solid #eee;">
+                          <td style="padding:8px;">
+                            <a href="{% url 'orders:order_details' order.id %}">#{{ order.id }}</a>
+                          </td>
+                          <td style="padding:8px;">{{ order.created_at|date:"Y-m-d H:i" }}</td>
+                          <td style="padding:8px;">{{ order.currency }} {{ order.total_price }}</td>
+                          <td style="padding:8px;">{{ order.get_payment_method_display }}</td>
+                          <td style="padding:8px;">
+                            <form method="post" action="{% url 'orders:manage_orders' %}" style="display:flex; gap:8px; align-items:center;">
+                              {% csrf_token %}
+                              <input type="hidden" name="order_id" value="{{ order.id }}">
+                              <select name="status" class="Input" style="height:36px;">
+                                {% for st in status_list %}
+                                  <option value="{{ st.value }}" {% if st.value == order.status %}selected{% endif %}>
+                                    {{ st.label }}
+                                  </option>
+                                {% endfor %}
+                              </select>
+                              <button type="submit" class="button button--primary" style="height:36px;">
+                                Update
+                              </button>
+                            </form>
+                          </td>
+                          <td style="padding:8px;">
+                            <a class="button button--secondary" href="{% url 'orders:order_details' order.id %}" style="height:36px;">
+                              View
+                            </a>
+                          </td>
+                        </tr>
+                      {% endfor %}
+                    </tbody>
+                  </table>
+                </div>
+              {% endif %}
+            {% endwith %}
+          {% endfor %}
+        </section>
+      {% endfor %}
+
+      <!-- Pagination -->
+      <section class="checkout-section">
+        <div class="pagination">
+          {% if page_obj.has_previous %}
+            <a class="pagination__link pagination__link--prev"
+               href="?{% querystring request.GET 'page' page_obj.previous_page_number %}">&laquo; Prev</a>
+          {% else %}
+            <span class="pagination__link pagination__link--prev" style="pointer-events:none; opacity:.5;">&laquo; Prev</span>
+          {% endif %}
+
+          <div class="pagination-list">
+            {% for num in page_obj.paginator.page_range %}
+              {% if num == page_obj.number %}
+                <span class="pagination__link active">{{ num }}</span>
+              {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                <a class="pagination__link" href="?{% querystring request.GET 'page' num %}">{{ num }}</a>
+              {% endif %}
+            {% endfor %}
+          </div>
+
+          {% if page_obj.has_next %}
+            <a class="pagination__link pagination__link--next"
+               href="?{% querystring request.GET 'page' page_obj.next_page_number %}">Next &raquo;</a>
+          {% else %}
+            <span class="pagination__link pagination__link--next" style="pointer-events:none; opacity:.5;">Next &raquo;</span>
+          {% endif %}
+        </div>
+      </section>
+    {% else %}
+      <section class="checkout-section">
+        <p>No orders found.</p>
+      </section>
+    {% endif %}
+  </div>
+</main>
+{% endblock %}
