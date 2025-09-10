@@ -6,6 +6,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.views.generic import TemplateView
 from django.views.decorators.http import require_http_methods, require_POST
 
+from products.models import Product
 from .cart import Cart
 from .forms import CheckoutForm
 from .models import (
@@ -43,16 +44,13 @@ def cart_order_add(request, product_id: int):
             quantity = int(request.POST.get("quantity", 1))
             cart.set_quantity(product_id, quantity)
         else:
-            # Support manual quantity from the cart input
             if "manual_quantity" in request.POST:
                 quantity = int(request.POST.get("manual_quantity", 1))
                 cart.set_quantity(product_id, quantity)
             else:
-                # No action parameter – act like "Add to Cart" once
                 if product_id not in cart:
                     cart.add(product_id)
     except (TypeError, ValueError):
-        # Ignore bad user input and redirect back
         pass
 
     next_url = request.GET.get("next")
@@ -96,36 +94,108 @@ def checkout(request):
     data = form.cleaned_data
     addr = data["shipping_address"]
 
+    # Normalize/validate payment method
     allowed = {c for c, _ in PaymentMethod.choices}
     pm = (
         data.get("payment_method")
         or request.POST.get("payment_method")
         or PaymentMethod.CARD
     )
+    if pm == "debit":
+        pm = PaymentMethod.CARD
     if pm not in allowed:
         pm = PaymentMethod.CARD
 
+    # Build requested quantities from cart
+    requested = {}  # product_id -> (product_obj, requested_qty)
+    for line in cart:
+        product = line["product"]
+        qty = int(line.get("quantity", line.get("data", {}).get("quantity", 0)))
+        if qty > 0:
+            requested[product.id] = (product, qty)
+
+    if not requested:
+        messages.error(request, "Your cart is empty.")
+        return redirect("orders:cart_detail")
+
     with transaction.atomic():
+        # Lock products for update to avoid race conditions on stock
+        products = (
+            Product.objects.select_for_update()
+            .filter(id__in=list(requested.keys()))
+            .in_bulk()
+        )
+
+        allocations = []  # list of (product, allocated_qty, unit_price)
+        any_partial = False
+        any_unavailable = False
+
+        for pid, (cart_product, req_qty) in requested.items():
+            p = products.get(pid)
+            if not p:
+                any_unavailable = True
+                messages.warning(
+                    request,
+                    f"'{cart_product.name}' is no longer available and was "
+                    f"removed from your order.",
+                )
+                continue
+
+            current_stock = int(p.stock or 0)
+            if current_stock <= 0:
+                any_unavailable = True
+                messages.warning(
+                    request,
+                    f"'{p.name}' is out of stock and was removed from your " f"order.",
+                )
+                continue
+
+            alloc = req_qty if req_qty <= current_stock else current_stock
+            if alloc < req_qty:
+                any_partial = True
+                messages.info(
+                    request,
+                    f"Only {alloc} of {req_qty} for '{p.name}' is available. "
+                    f"Your order was adjusted.",
+                )
+
+            if alloc > 0:
+                allocations.append((p, alloc, Decimal(str(p.price))))
+
+        if not allocations:
+            messages.error(
+                request,
+                "Unfortunately none of the items in your cart are available "
+                "in stock right now.",
+            )
+            # Keep cart so user can try later / adjust
+            return redirect("orders:checkout")
+
+        # Create the order
         order = Order.objects.create(
             user=request.user,
             status=OrderStatus.PENDING,
-            total_price=Decimal("0.00"),  # set after items
+            total_price=Decimal("0.00"),
             shipping_address=addr,
             payment_method=pm,
         )
 
-        # Build items + subtotal (always from DB price)
-        items, subtotal = [], Decimal("0.00")
-        for line in cart:
-            product = line["product"]
-            qty = int(line.get("quantity", line.get("data", {}).get("quantity", 0)))
-            unit = Decimal(str(product.price))
+        # Create order items and reduce stock
+        items = []
+        subtotal = Decimal("0.00")
+        touched_products = []
+        for p, alloc, unit_price in allocations:
             items.append(
-                OrderItem(order=order, product=product, price=unit, quantity=qty)
+                OrderItem(order=order, product=p, price=unit_price, quantity=alloc)
             )
-            subtotal += unit * Decimal(qty)
+            subtotal += unit_price * Decimal(alloc)
+            p.stock = int(p.stock) - alloc
+            touched_products.append(p)
 
         OrderItem.objects.bulk_create(items)
+        Product.objects.bulk_update(touched_products, ["stock"])
+
+        # Snapshot address and save totals
         order.snap_shipping_address(addr)
         order.total_price = subtotal.quantize(Decimal("0.01"))
         order.save(
@@ -151,13 +221,22 @@ def checkout(request):
             setattr(request.user, "phone", phone)
         request.user.save(update_fields=["first_name", "last_name", "phone"])
 
-        cart.clear()
+    # Clear cart after successful order creation
+    cart.clear()
+
+    if any_unavailable:
+        messages.warning(request, "Some items were removed due to no stock.")
+    if any_partial:
+        messages.info(
+            request, "Some item quantities were adjusted to " "available stock."
+        )
 
     return redirect("orders:order_details", order_id=order.id)
 
 
 @login_required(login_url="users:login")
 def order_success(request, order_id: int):
+    # Retained for compatibility if linked elsewhere
     order = get_object_or_404(Order, id=order_id, user=request.user)
     return render(
         request,
@@ -167,26 +246,6 @@ def order_success(request, order_id: int):
             "created_at": order.created_at.strftime("%Y-%m-%d %H:%M"),
         },
     )
-
-
-def _update_user_from_checkout(user, full_name: str, phone: str) -> None:
-    """Update User.first_name, User.last_name, and User.phone from checkout data."""
-    changed = False
-    if full_name:
-        parts = full_name.strip().split()
-        first_name = parts[0]
-        last_name = " ".join(parts[1:]) if len(parts) > 1 else ""
-        if user.first_name != first_name:
-            user.first_name = first_name
-            changed = True
-        if user.last_name != last_name:
-            user.last_name = last_name
-            changed = True
-    if phone and getattr(user, "phone", None) != phone:
-        user.phone = phone
-        changed = True
-    if changed:
-        user.save()
 
 
 @login_required(login_url="users:login")
@@ -205,14 +264,13 @@ def order_details(request, order_id: int):
         user=request.user,
     )
 
-    # Fetch items + products in one go
     items = order.items.select_related("product").all()
 
-    # Build a lightweight items view model with safe fallbacks
+    # Build VM items
     vm_items = []
     subtotal = Decimal("0.00")
     for it in items:
-        unit_price = Decimal(str(it.price))  # unit price at time of purchase
+        unit_price = Decimal(str(it.price))
         qty = int(it.quantity)
         line_total = (unit_price * Decimal(qty)).quantize(Decimal("0.01"))
 
@@ -238,49 +296,35 @@ def order_details(request, order_id: int):
         subtotal += line_total
 
     context = {
-        # 1) Order header
         "order": order,
         "order_number": order.id,
-        "created_at": order.created_at,  # use |date in template
+        "created_at": order.created_at,
         "total_price": order.total_price,
         "currency": order.currency,
-        "status": order.get_status_display(),  # human label
-        # expose raw codes (lowercase, per models.py)
+        "status": order.get_status_display(),
         "payment_method_code": order.payment_method,  # 'card' | 'wallet' | 'cod'
         "status_code": order.status,  # 'pending' | 'paid' | ...
-        # convenience boolean for the template
         "show_proceed_to_payment": (
             order.status == OrderStatus.PENDING
             and order.payment_method in {PaymentMethod.CARD, PaymentMethod.WALLET}
         ),
-        # 2) User details
         "user_full_name": order.ship_full_name
         or (
-            f"{getattr(order.user, 'first_name', '')} {getattr(order.user, 'last_name', '')}"
+            f"{getattr(order.user, 'first_name', '')} "
+            f"{getattr(order.user, 'last_name', '')}"
         ).strip(),
         "user_email": getattr(order.user, "email", ""),
         "user_phone": order.ship_recipient_phone or getattr(order.user, "phone", ""),
-        # 3) Shipping address snapshot (from order)
         "ship_address_line1": order.ship_address_line1,
         "ship_address_line2": order.ship_address_line2,
         "ship_city": order.ship_city,
         "ship_country": order.ship_country,
         "ship_postal_code": order.ship_postal_code,
-        # 4) Payment method
         "payment_method": order.get_payment_method_display(),
-        # 5) Items
         "items": vm_items,
         "subtotal": subtotal.quantize(Decimal("0.01")),
     }
     return render(request, "orders/order_details.html", context)
-
-
-@login_required(login_url="users:login")
-def order_success(request, order_id: int):
-    """
-    Keep existing route working, but show the new details page.
-    """
-    return redirect("orders:order_details", order_id=order_id)
 
 
 @login_required(login_url="users:login")
@@ -301,13 +345,35 @@ def pay_order(request, order_id):
 @login_required(login_url="users:login")
 @require_POST
 def cancel_order(request, order_id):
-    order = get_object_or_404(Order, id=order_id, user=request.user)
+    """
+    Cancel an order. If it transitions to CANCELLED from PENDING or PAID,
+    return the allocated stock to products exactly once.
+    """
+    with transaction.atomic():
+        order = (
+            Order.objects.select_for_update()
+            .prefetch_related("items__product")
+            .get(id=order_id, user=request.user)
+        )
 
-    if order.status not in [OrderStatus.PENDING, OrderStatus.PAID]:
-        messages.error(request, "This order cannot be canceled.")
-    else:
-        order.status = OrderStatus.CANCELLED
-        order.save(update_fields=["status"])
-        messages.success(request, f"Order #{order.id} has been canceled.")
+        if order.status in [OrderStatus.PENDING, OrderStatus.PAID]:
+            # Restock products only if not already cancelled
+            order.status = OrderStatus.CANCELLED
+            order.save(update_fields=["status"])
+
+            # Return stock
+            touched = []
+            for item in order.items.all():
+                p = item.product
+                p.stock = int(p.stock) + int(item.quantity)
+                touched.append(p)
+            if touched:
+                Product.objects.bulk_update(touched, ["stock"])
+
+            messages.success(
+                request, f"Order #{order.id} has been canceled and stock " f"restored."
+            )
+        else:
+            messages.error(request, "This order cannot be canceled.")
 
     return redirect("users:account")
