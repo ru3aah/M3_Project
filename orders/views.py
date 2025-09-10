@@ -272,13 +272,13 @@ def order_details(request, order_id: int):
       4) Payment method
       5) Item list with product, unit price, qty, measure unit, line subtotal
     """
-    qs = OrderItem.objects.select_related("user", "shipping_address")
-
+    base_qs = Order.objects.select_related("user", "shipping_address")
     if request.user.is_staff:
-        order = get_object_or_404(qs, id=order_id)
+        order = get_object_or_404(base_qs, id=order_id)
     else:
-        order = get_object_or_404(qs, id=order_id, user=request.user)
+        order = get_object_or_404(base_qs, id=order_id, user=request.user)
 
+    # Items + products
     items = order.items.select_related("product").all()
 
     # Build VM items
@@ -325,8 +325,7 @@ def order_details(request, order_id: int):
         ),
         "user_full_name": order.ship_full_name
         or (
-            f"{getattr(order.user, 'first_name', '')} "
-            f"{getattr(order.user, 'last_name', '')}"
+            f"{getattr(order.user, 'first_name', '')} {getattr(order.user, 'last_name', '')}"
         ).strip(),
         "user_email": getattr(order.user, "email", ""),
         "user_phone": order.ship_recipient_phone or getattr(order.user, "phone", ""),
