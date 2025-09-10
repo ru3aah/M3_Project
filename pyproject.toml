@@ -17,6 +17,7 @@ dependencies = [
   "drf-spectacular>=0.28.0,<0.29.0",
   "pillow>=11.3.0,<12.0.0",
   "uvicorn>=0.35.0,<0.36.0",
+  "whitenoise (>=6.6,<7)",
 ]
 
 [project.optional-dependencies]

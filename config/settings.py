@@ -43,6 +43,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -109,13 +110,17 @@ USE_I18N = True
 USE_TZ = True
 
 # --- Static / Media ---
-STATIC_URL = "static/"
+STATIC_URL = "/static/"
+
+STATIC_ROOT = BASE_DIR / "staticfiles"
+
 STATICFILES_DIRS = [BASE_DIR / "static"]
 
-MEDIA_URL = "media/"
+MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
-DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+if os.path.exists("/.dockerenv") or os.getenv("IS_PRODUCTION"):
+    STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 # --- Auth redirects ---
 SUCCESS_URL = "/"
