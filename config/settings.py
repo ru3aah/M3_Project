@@ -5,11 +5,9 @@ from dotenv import load_dotenv
 load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-
-# Core
-SECRET_KEY = os.getenv("SECRET_KEY", "unsafe-dev-key")
-DEBUG = os.getenv("DEBUG", "1") == "1"
-ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "0.0.0.0,127.0.0.1,localhost").split(",")
+SECRET_KEY = os.getenv("SECRET_KEY", "unsafe-secret-key")
+DEBUG = True
+ALLOWED_HOSTS = ["0.0.0.0", "127.0.0.1", "localhost"]
 
 AUTH_USER_MODEL = "users.User"
 
@@ -62,35 +60,26 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "config.wsgi.application"
 
-# --- Database ---
-# Use Postgres if POSTGRES_HOST is present (Docker), otherwise fallback to SQLite (local dev).
-if os.getenv("POSTGRES_HOST"):
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.postgresql",
-            "NAME": os.getenv("POSTGRES_DB", "postgres"),
-            "USER": os.getenv("POSTGRES_USER", "postgres"),
-            "PASSWORD": os.getenv("POSTGRES_PASSWORD", "postgres"),
-            "HOST": os.getenv("POSTGRES_HOST", "db"),
-            "PORT": os.getenv("POSTGRES_PORT", "5432"),
-            "CONN_MAX_AGE": int(os.getenv("DB_CONN_MAX_AGE", "60")),
-        }
+# --- PostgreSQL (via docker-compose db service) ---
+DATABASES = {
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": os.getenv("POSTGRES_DB", "postgres"),
+        "USER": os.getenv("POSTGRES_USER", "postgres"),
+        "PASSWORD": os.getenv("POSTGRES_PASSWORD", "postgres"),
+        "HOST": os.getenv("POSTGRES_HOST", "db"),
+        "PORT": os.getenv("POSTGRES_PORT", "5432"),
     }
-else:
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.sqlite3",
-            "NAME": BASE_DIR / "db.sqlite3",
-        }
-    }
+}
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"
+        "NAME": "django.contrib.auth.password_validation"
+        ".UserAttributeSimilarityValidator"
     },
     {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
     {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
-    {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
+    {"NAME": "django.contrib.auth.password_validation" ".NumericPasswordValidator"},
 ]
 
 LANGUAGE_CODE = "en-us"
@@ -98,10 +87,9 @@ TIME_ZONE = "UTC"
 USE_I18N = True
 USE_TZ = True
 
-# Static & media
 STATIC_URL = "static/"
 STATICFILES_DIRS = [BASE_DIR / "static"]
-STATIC_ROOT = BASE_DIR / "staticfiles"  # for collectstatic in Docker
+
 MEDIA_URL = "media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
@@ -121,7 +109,7 @@ PRODUCTS_QUERY_MAP = {
 }
 
 SESSION_ENGINE = "django.contrib.sessions.backends.db"
-SESSION_COOKIE_AGE = 30 * 60  # seconds
+SESSION_COOKIE_AGE = 30 * 60  # 30 minutes
 SESSION_SAVE_EVERY_REQUEST = True
 
 IS_PRODUCTION = os.getenv("IS_PRODUCTION")
@@ -132,16 +120,8 @@ if IS_PRODUCTION:
     SESSION_COOKIE_HTTPONLY = True
     SESSION_COOKIE_SAMESITE = "Lax"
 
-# Optional: trust reverse proxy origin(s)
-CSRF_TRUSTED_ORIGINS = (
-    os.getenv("CSRF_TRUSTED_ORIGINS", "").split(",")
-    if os.getenv("CSRF_TRUSTED_ORIGINS")
-    else []
-)
-
-# --- EMAIL CONFIGURATION ---
+# --- Email Configuration ---
 SITE_URL = os.getenv("SITE_URL", "http://localhost:8000")
-
 if DEBUG:
     EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 else:
