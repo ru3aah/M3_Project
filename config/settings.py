@@ -1,12 +1,17 @@
 import os
 from pathlib import Path
+
 from dotenv import load_dotenv
 
-load_dotenv()
-
 BASE_DIR = Path(__file__).resolve().parent.parent
-SECRET_KEY = os.getenv("SECRET_KEY", "unsafe-secret-key")
-DEBUG = True
+
+# Load base env first (if present), then local overrides
+load_dotenv(BASE_DIR / ".env")
+load_dotenv(BASE_DIR / ".env.local", override=True)
+
+# --- Core ---
+SECRET_KEY = os.getenv("SECRET_KEY", "unsafe-dev-secret")
+DEBUG = os.getenv("DEBUG", "1") == "1"
 ALLOWED_HOSTS = ["0.0.0.0", "127.0.0.1", "localhost"]
 
 AUTH_USER_MODEL = "users.User"
@@ -18,6 +23,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    # 3rd-party
     "rest_framework",
     "rest_framework.authtoken",
     "django_filters",
@@ -60,22 +66,30 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "config.wsgi.application"
 
-# --- PostgreSQL (via docker-compose db service) ---
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": os.getenv("POSTGRES_DB", "postgres"),
-        "USER": os.getenv("POSTGRES_USER", "postgres"),
-        "PASSWORD": os.getenv("POSTGRES_PASSWORD", "postgres"),
-        "HOST": os.getenv("POSTGRES_HOST", "db"),
-        "PORT": os.getenv("POSTGRES_PORT", "5432"),
+# --- Database ---
+if os.getenv("POSTGRES_HOST"):
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": os.getenv("POSTGRES_DB", "postgres"),
+            "USER": os.getenv("POSTGRES_USER", "postgres"),
+            "PASSWORD": os.getenv("POSTGRES_PASSWORD", "postgres"),
+            "HOST": os.getenv("POSTGRES_HOST", "db"),
+            "PORT": int(os.getenv("POSTGRES_PORT", "5432")),
+        }
     }
-}
+else:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        }
+    }
 
 AUTH_PASSWORD_VALIDATORS = [
     {
         "NAME": "django.contrib.auth.password_validation"
-        ".UserAttributeSimilarityValidator"
+        ".UserAttributeSimilarityValidator",
     },
     {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
     {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
@@ -87,6 +101,7 @@ TIME_ZONE = "UTC"
 USE_I18N = True
 USE_TZ = True
 
+# --- Static / Media ---
 STATIC_URL = "static/"
 STATICFILES_DIRS = [BASE_DIR / "static"]
 
@@ -95,12 +110,14 @@ MEDIA_ROOT = BASE_DIR / "media"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
+# --- Auth redirects ---
 SUCCESS_URL = "/"
 SUCCESS_REDIRECT_URL = "/"
 LOGIN_URL = "/users/login/"
 LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "/users/login/"
 
+# --- Products sorting map ---
 PRODUCTS_QUERY_MAP = {
     "rating": "-rating",
     "price_asc": "price",
@@ -108,8 +125,9 @@ PRODUCTS_QUERY_MAP = {
     "new": "-created_at",
 }
 
+# --- Sessions ---
 SESSION_ENGINE = "django.contrib.sessions.backends.db"
-SESSION_COOKIE_AGE = 30 * 60  # 30 minutes
+SESSION_COOKIE_AGE = 30 * 60  # seconds
 SESSION_SAVE_EVERY_REQUEST = True
 
 IS_PRODUCTION = os.getenv("IS_PRODUCTION")
@@ -120,8 +138,9 @@ if IS_PRODUCTION:
     SESSION_COOKIE_HTTPONLY = True
     SESSION_COOKIE_SAMESITE = "Lax"
 
-# --- Email Configuration ---
+# --- Email ---
 SITE_URL = os.getenv("SITE_URL", "http://localhost:8000")
+
 if DEBUG:
     EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 else:
