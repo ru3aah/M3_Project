@@ -101,6 +101,7 @@ def checkout(request):
         or request.POST.get("payment_method")
         or PaymentMethod.CARD
     )
+    # map 'debit' value from template to PaymentMethod.CARD
     if pm == "debit":
         pm = PaymentMethod.CARD
     if pm not in allowed:
@@ -118,60 +119,64 @@ def checkout(request):
         messages.error(request, "Your cart is empty.")
         return redirect("orders:cart_detail")
 
+    any_partial = False
+    any_unavailable = False
+
     with transaction.atomic():
-        # Lock products for update to avoid race conditions on stock
-        products = (
+        # Lock products while we validate quantities
+        products_map = (
             Product.objects.select_for_update()
             .filter(id__in=list(requested.keys()))
             .in_bulk()
         )
 
-        allocations = []  # list of (product, allocated_qty, unit_price)
-        any_partial = False
-        any_unavailable = False
-
         for pid, (cart_product, req_qty) in requested.items():
-            p = products.get(pid)
-            if not p:
+            p = products_map.get(pid)
+
+            if not p or int(p.stock or 0) <= 0:
+                # Remove from cart
+                cart.remove(pid)
                 any_unavailable = True
+                # Try to use the product's name if available
+                removed_name = (p and p.name) or cart_product.name
                 messages.warning(
                     request,
-                    f"'{cart_product.name}' is no longer available and was "
-                    f"removed from your order.",
+                    f"'{removed_name}' is no longer available and was removed from your cart.",
                 )
                 continue
 
-            current_stock = int(p.stock or 0)
-            if current_stock <= 0:
-                any_unavailable = True
-                messages.warning(
-                    request,
-                    f"'{p.name}' is out of stock and was removed from your " f"order.",
-                )
-                continue
-
-            alloc = req_qty if req_qty <= current_stock else current_stock
-            if alloc < req_qty:
+            current_stock = int(p.stock)
+            if req_qty > current_stock:
                 any_partial = True
+                # If some stock remains, set cart qty to remaining; else remove
+                if current_stock > 0:
+                    cart.set_quantity(pid, current_stock)
+                    messages.info(
+                        request,
+                        f"Quantity for '{p.name}' was reduced to "
+                        f"{current_stock} due to limited stock.",
+                    )
+                else:
+                    cart.remove(pid)
+                    any_unavailable = True
+                    messages.warning(
+                        request,
+                        f"'{p.name}' is out of stock and was removed from "
+                        f"your cart.",
+                    )
+
+        # If anything changed, stop here and send the user to the cart to review.
+        if any_unavailable or any_partial:
+            if any_unavailable:
+                messages.warning(request, "Some items were removed due to no " "stock.")
+            if any_partial:
                 messages.info(
                     request,
-                    f"Only {alloc} of {req_qty} for '{p.name}' is available. "
-                    f"Your order was adjusted.",
+                    "Some item quantities were adjusted to match available " "stock.",
                 )
+            return redirect("orders:cart_detail")
 
-            if alloc > 0:
-                allocations.append((p, alloc, Decimal(str(p.price))))
-
-        if not allocations:
-            messages.error(
-                request,
-                "Unfortunately none of the items in your cart are available "
-                "in stock right now.",
-            )
-            # Keep cart so user can try later / adjust
-            return redirect("orders:checkout")
-
-        # Create the order
+        # Everything is fully available -> create order and subtract stock.
         order = Order.objects.create(
             user=request.user,
             status=OrderStatus.PENDING,
@@ -180,20 +185,23 @@ def checkout(request):
             payment_method=pm,
         )
 
-        # Create order items and reduce stock
         items = []
         subtotal = Decimal("0.00")
-        touched_products = []
-        for p, alloc, unit_price in allocations:
+        touched = []
+
+        for pid, (cart_product, req_qty) in requested.items():
+            p = products_map[pid]  # guaranteed present and sufficient stock
+            unit_price = Decimal(str(p.price))
             items.append(
-                OrderItem(order=order, product=p, price=unit_price, quantity=alloc)
+                OrderItem(order=order, product=p, price=unit_price, quantity=req_qty)
             )
-            subtotal += unit_price * Decimal(alloc)
-            p.stock = int(p.stock) - alloc
-            touched_products.append(p)
+            subtotal += unit_price * Decimal(req_qty)
+            p.stock = int(p.stock) - req_qty
+            touched.append(p)
 
         OrderItem.objects.bulk_create(items)
-        Product.objects.bulk_update(touched_products, ["stock"])
+        if touched:
+            Product.objects.bulk_update(touched, ["stock"])
 
         # Snapshot address and save totals
         order.snap_shipping_address(addr)
@@ -223,14 +231,6 @@ def checkout(request):
 
     # Clear cart after successful order creation
     cart.clear()
-
-    if any_unavailable:
-        messages.warning(request, "Some items were removed due to no stock.")
-    if any_partial:
-        messages.info(
-            request, "Some item quantities were adjusted to " "available stock."
-        )
-
     return redirect("orders:order_details", order_id=order.id)
 
 

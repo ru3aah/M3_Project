@@ -393,3 +393,61 @@ document.addEventListener('change', function (e) {
     });
   }
 });
+
+(function () {
+  const LEVEL_MAP = {
+    success: { cls: 'toast--success', icon: '✓' },
+    info:    { cls: 'toast--info',    icon: 'ℹ' },
+    warning: { cls: 'toast--warning', icon: '⚠' },
+    error:   { cls: 'toast--error',   icon: '⨯' },
+    debug:   { cls: 'toast--info',    icon: '🐞' }
+  };
+
+  function makeToast({ level = 'info', text = '' }) {
+    const cont = document.getElementById('toast-container');
+    if (!cont) return;
+
+    const meta = LEVEL_MAP[level] || LEVEL_MAP.info;
+
+    const el = document.createElement('div');
+    el.className = `toast ${meta.cls}`;
+    el.setAttribute('role', 'status');
+    el.innerHTML = `
+      <div class="toast__icon">${meta.icon}</div>
+      <div class="toast__content">${text}</div>
+      <button type="button" class="toast__close" aria-label="Close">×</button>
+    `;
+
+    cont.appendChild(el);
+
+    // Auto-dismiss logic with hover pause
+    let removed = false;
+    let timeout = setTimeout(remove, 4000);
+    function remove() {
+      if (removed) return;
+      removed = true;
+      el.style.transition = 'opacity .2s ease, transform .2s ease';
+      el.style.opacity = '0';
+      el.style.transform = 'translateY(-6px)';
+      setTimeout(() => el.remove(), 200);
+    }
+
+    el.addEventListener('mouseenter', () => clearTimeout(timeout));
+    el.addEventListener('mouseleave', () => {
+      timeout = setTimeout(remove, 1500);
+    });
+    el.querySelector('.toast__close').addEventListener('click', remove);
+  }
+
+  // Bootstrap any Django messages passed by the template
+  document.addEventListener('DOMContentLoaded', () => {
+    if (Array.isArray(window.__DJANGO_MESSAGES__)) {
+      window.__DJANGO_MESSAGES__.forEach(makeToast);
+      // cleanup
+      try { delete window.__DJANGO_MESSAGES__; } catch (_) { window.__DJANGO_MESSAGES__ = []; }
+    }
+  });
+
+  // Optional: expose for manual use
+  window.toast = makeToast;
+})();
