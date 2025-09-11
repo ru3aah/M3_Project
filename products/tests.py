@@ -107,10 +107,12 @@ class ProductAdminInlinePostTests(TestCase):
     def setUp(self):
         User = get_user_model()
         self.superuser = User.objects.create_superuser(
-            email="admin@example.com", password="pass"
+            username="admin",  # shim just for the manager
+            email="admin@example.com",
+            password="pass",
         )
         self.client = Client()
-        self.client.login(email="admin@example.com", password="pass")
+        self.client.force_login(self.superuser)  # avoid credential-based login
 
         self.category = Category.objects.create(name="Hops", slug="hops")
         self.product = Product.objects.create(
