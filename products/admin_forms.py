@@ -1,121 +1,128 @@
 from django import forms
+
 from .models import ProductTechSpec
 
 
-def _stringify_value(value):
+def _format_value_for_input(value):
     """
-    For existing instances: convert JSON value into a single string for the form.
-    - [{"name": "A", "value": "x"}, {"name": "B", "value": "y"}] -> "A: x, B: y"
+    Convert stored JSON value into a friendly string for the admin input:
+    - [{"name": "Alpha", "value": "12%"}, ...] -> "Alpha: 12%, Beta: 4.5%"
     - ["Red", "Blue"] -> "Red, Blue"
     - "USA" -> "USA"
     """
     if isinstance(value, list):
-        if (
-            value
-            and isinstance(value[0], dict)
-            and "name" in value[0]
-            and "value" in value[0]
+        if value and all(
+            isinstance(it, dict) and "name" in it and "value" in it for it in value
         ):
-            return ", ".join(
-                f"{item.get('name', '')}: {item.get('value', '')}" for item in value
-            )
-        return ", ".join(str(x) for x in value)
+            return ", ".join(f"{it['name']}: {it['value']}" for it in value)
+        return ", ".join(str(it) for it in value)
     return "" if value is None else str(value)
 
 
-def _parse_value(raw):
+def _parse_value_from_input(raw):
     """
-    From a single input string to JSON shape:
-    - "A: x, B: y"  -> [{"name": "A", "value": "x"}, {"name": "B", "value": "y"}]
-    - "Red, Blue"   -> ["Red", "Blue"]
-    - "USA"         -> "USA"
+    Parse the admin text input into one of:
+    - list[{"name","value"}] if there are "name: value" pairs,
+    - list[str] if there are commas but no colon pairs,
+    - str otherwise (single plain value).
     """
-    raw = (raw or "").strip()
     if not raw:
         return ""
 
-    # name:value pairs => list of dicts
+    raw = raw.strip()
     if ":" in raw:
         pairs = []
         for chunk in raw.split(","):
             chunk = chunk.strip()
             if not chunk:
                 continue
-            name, _, val = chunk.partition(":")
-            pairs.append({"name": name.strip(), "value": val.strip()})
+            if ":" in chunk:
+                k, v = chunk.split(":", 1)
+                pairs.append({"name": k.strip(), "value": v.strip()})
         if pairs:
             return pairs
+        # fallback to raw if we didn't parse anything sensible
+        return raw
 
-    # simple comma-separated list
     if "," in raw:
-        items = [s.strip() for s in raw.split(",") if s.strip()]
-        if items:
-            return items
+        parts = [p.strip() for p in raw.split(",") if p.strip()]
+        if parts:
+            return parts
 
-    # plain string
     return raw
 
 
 class ProductTechSpecJSONForm(forms.ModelForm):
     """
-    Inline ModelForm that exposes JSON as (spec_name, spec_value).
-    NOTE: spec_name is not required at field level so that existing rows
-    validate without typing anything; we enforce required for *new* rows in clean().
+    Inline form that exposes ProductTechSpec.tech_spec as two friendly fields:
+    - spec_name (required)
+    - spec_value (optional), supports:
+        * plain string
+        * comma-separated list => ["a","b"]
+        * "k:v, k:v" => [{"name":k,"value":v}, ...]
     """
 
-    spec_name = forms.CharField(label="Name", required=False)
+    spec_name = forms.CharField(label="Name", required=True)
     spec_value = forms.CharField(label="Value", required=False)
 
     class Meta:
         model = ProductTechSpec
-        fields = []  # manage tech_spec ourselves
+        fields = []  # We handle serialization into tech_spec ourselves.
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        # Pre-fill from instance.tech_spec for existing rows
-        if getattr(self.instance, "pk", None) and isinstance(
-            self.instance.tech_spec, dict
-        ):
-            name = self.instance.tech_spec.get("name", "")
-            value = self.instance.tech_spec.get("value", "")
-            self.fields["spec_name"].initial = name
-            self.fields["spec_value"].initial = _stringify_value(value)
+        # Populate initial values from instance.tech_spec for display
+        ts = getattr(self.instance, "tech_spec", None) or {}
+        name = ts.get("name", "")
+        value = ts.get("value", "")
+
+        self.fields["spec_name"].initial = name
+        self.fields["spec_value"].initial = _format_value_for_input(value)
 
     def has_changed(self):
         """
-        Because Meta.fields is empty, default has_changed() would be False for extra rows.
-        We consider our custom fields.
+        Default has_changed() would be False because Meta.fields is empty.
+        We must consider our custom fields so extra inline rows are saved.
         """
         if super().has_changed():
             return True
-        name = (self.data.get(f"{self.prefix}-spec_name") or "").strip()
-        value = (self.data.get(f"{self.prefix}-spec_value") or "").strip()
-        return bool(name or value)
+
+        # When bound, Django prefixes fields with something like "tech_specs-0-..."
+        name = (
+            (self.data.get(f"{self.prefix}-spec_name") or "").strip()
+            if self.is_bound
+            else ""
+        )
+        value = (
+            (self.data.get(f"{self.prefix}-spec_value") or "").strip()
+            if self.is_bound
+            else ""
+        )
+
+        # Also consider initial (for existing objects)
+        initial_name = (self.fields["spec_name"].initial or "").strip()
+        initial_value = (self.fields["spec_value"].initial or "").strip()
+
+        return (name != initial_name) or (value != initial_value)
 
     def clean(self):
         cleaned = super().clean()
-
-        # Existing instance posted with no change — keep original tech_spec as-is
-        init_name = self.fields["spec_name"].initial or ""
-        init_value = self.fields["spec_value"].initial or ""
-
         name = (cleaned.get("spec_name") or "").strip()
         raw_value = (cleaned.get("spec_value") or "").strip()
 
-        if self.instance.pk and not name and not raw_value:
-            # Keep prior values
-            prior = self.instance.tech_spec or {}
-            self.instance.tech_spec = {
-                "name": prior.get("name", ""),
-                "value": prior.get("value", ""),
-            }
-            return cleaned
-
-        # For *new* rows, name is required
-        if not self.instance.pk and not name:
+        if not name:
             self.add_error("spec_name", "This field is required.")
 
-        # Parse and store JSON on instance
-        self.instance.tech_spec = {"name": name, "value": _parse_value(raw_value)}
+        parsed_value = _parse_value_from_input(raw_value)
+        # Stash into instance; InlineFormSet will call form.save()
+        self.instance.tech_spec = {"name": name, "value": parsed_value}
         return cleaned
+
+    def save(self, commit=True):
+        # Rely on default inline save_new/save_existing flow
+        instance = super().save(commit=False)
+        # tech_spec already set in clean()
+        if commit:
+            instance.save()
+        return instance
