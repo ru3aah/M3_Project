@@ -69,7 +69,6 @@ class ShippingAddressCreateView(LoginRequiredMixin, CreateView):
 
     def form_valid(self, form):
         form.instance.user = self.request.user
-        # Make the newly added address default, replacing any previous one.
         with transaction.atomic():
             ShippingAddress.objects.filter(user=self.request.user, default=True).update(
                 default=False
@@ -81,7 +80,6 @@ class ShippingAddressCreateView(LoginRequiredMixin, CreateView):
         return redirect(self.get_success_url())
 
     def get_success_url(self):
-        # honor ?next=... if provided; otherwise go to checkout
         next_url = self.request.GET.get("next")
         return next_url or reverse_lazy("orders:checkout")
 
@@ -186,20 +184,17 @@ def address_update(request, pk: int):
         return redirect("users:account")
 
     with transaction.atomic():
-        # Update fields
         addr.address_line_1 = address_line_1
         addr.address_line_2 = address_line_2
         addr.postal_code = postal_code
         addr.city = city
         addr.country = country
 
-        # Handle default flag
         if want_default:
             ShippingAddress.objects.filter(user=request.user, default=True).exclude(
                 pk=addr.pk
             ).update(default=False)
             addr.default = True
-        # If not checked, leave default as-is to avoid removing the only default by accident.
 
         addr.save()
 

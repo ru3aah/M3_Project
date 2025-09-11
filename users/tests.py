@@ -172,9 +172,6 @@ class UsersFormsTests(TestCase):
         self.assertTrue(True)
 
 
-# ---------- serializers (optional) ----------
-
-
 class UsersSerializersTests(TestCase):
     def setUp(self):
         try:
@@ -191,9 +188,6 @@ class UsersSerializersTests(TestCase):
         if not self.serializers:
             self.skipTest("users.serializers not available")
         self.assertTrue(True)
-
-
-# ---------- urls smoke & resolution ----------
 
 
 class UsersURLSmokeTests(TestCase):
@@ -217,9 +211,6 @@ class UsersURLResolutionTests(TestCase):
             )
         match = resolve(url)
         self.assertTrue(callable(match.func))
-
-
-# ---------- views smoke ----------
 
 
 class UsersViewsSmokeTests(TestCase):

@@ -47,6 +47,5 @@ class OrderItemAdmin(admin.ModelAdmin):
         "order__user__email",
         "product__name",
     )
-    # OrderItem has no created_at field; if you want newest first,
-    # sort by the parent Order's created_at or simply by id:
+
     ordering = ("-order__created_at",)  # or: ordering = ("-id",)

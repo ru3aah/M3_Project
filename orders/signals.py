@@ -10,7 +10,7 @@ def _capture_old_status(sender, instance: Order, **kwargs):
     if instance.pk:
         try:
             old = Order.objects.only("status").get(pk=instance.pk)
-            instance._old_status = old.status  # raw code e.g. 'pending'
+            instance._old_status = old.status
         except Order.DoesNotExist:
             instance._old_status = None
     else:

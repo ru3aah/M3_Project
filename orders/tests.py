@@ -266,11 +266,13 @@ class CartBehaviorTests(TestCase):
         add_to_cart(cart, self.product, qty=3)
         total = cart_total_price(cart)
         self.assertIn(total, (decimal.Decimal("29.97"), decimal.Decimal("9.99")))
+
+
 # --- Context processor tests --------------------------------------------------
 
 
 @unittest.skipIf(
-    not CART_CP_AVAILABLE or not CART_AVAILABLE, "cart cp or Cart not available"
+    not CART_CP_AVAILABLE or not CART_AVAILABLE, "cart cp or Cart not " "available"
 )
 class CartContextProcessorTests(TestCase):
     def setUp(self):
@@ -305,7 +307,6 @@ class OrderModelTests(TestCase):
             quantity=2,
         )
         self.assertEqual(item.order, order)
-        # related_name is often 'items'; if not, fall back
         rel = getattr(order, "items", None) or getattr(order, "orderitem_set")
         self.assertEqual(rel.count(), 1)
 
@@ -364,13 +365,13 @@ class OrderSerializerTests(TestCase):
             order=order, product=self.product, price=self.product.price, quantity=1
         )
         ser = OrderSerializer(order)
-        data = ser.data  # type: ignore[attr-defined]
+        data = ser.data
         self.assertIn("id", data)
         self.assertTrue("items" in data or "order_items" in data)
 
     def test_deserialize_and_validate(self):
         payload = {"user": self.user.id}
-        ser = OrderSerializer(data=payload)  # type: ignore[attr-defined]
+        ser = OrderSerializer(data=payload)
         if ser.is_valid():
             obj = ser.save()
             self.assertIsNotNone(obj.pk)
@@ -396,7 +397,7 @@ class OrderEmailTests(TestCase):
         )
 
     def test_send_order_confirmation(self):
-        send_order_confirmation(self.order)  # type: ignore[misc]
+        send_order_confirmation(self.order)
         self.assertEqual(len(mail.outbox), 1)
         self.assertIn("order", mail.outbox[0].subject.lower())
 

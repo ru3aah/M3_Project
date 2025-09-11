@@ -6,5 +6,4 @@ class OrdersConfig(AppConfig):
     name = "orders"
 
     def ready(self):
-        # Import signals when apps are ready (safe point).
         from . import signals  # noqa: F401

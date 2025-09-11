@@ -32,7 +32,8 @@ class OrderSerializer(serializers.ModelSerializer):
     serialization for related items through the nested OrderItemSerializer. It ensures
     that operations are consistent and conform to the defined structure.
 
-    :ivar items: A nested serializer for related order items. The items field is read-only
+    :ivar items: A nested serializer for related order items.
+        The items field is read-only
         and allows multiple instances.
     :type items: OrderItemSerializer
     """

@@ -162,7 +162,6 @@ def checkout(request):
             current_stock = int(p.stock)
             if req_qty > current_stock:
                 any_partial = True
-                # If some stock remains, set cart qty to remaining; else remove
                 if current_stock > 0:
                     cart.set_quantity(pid, current_stock)
                     messages.info(
@@ -179,18 +178,16 @@ def checkout(request):
                         f"your cart.",
                     )
 
-        # If anything changed, stop here and send the user to the cart to review.
         if any_unavailable or any_partial:
             if any_unavailable:
                 messages.warning(request, "Some items were removed due to no " "stock.")
             if any_partial:
                 messages.info(
                     request,
-                    "Some item quantities were adjusted to match available " "stock.",
+                    "Some item quantities were adjusted to match available stock.",
                 )
             return redirect("orders:cart_detail")
 
-        # Everything is fully available -> create order and subtract stock.
         order = Order.objects.create(
             user=request.user,
             status=OrderStatus.PENDING,
@@ -204,7 +201,7 @@ def checkout(request):
         touched = []
 
         for pid, (cart_product, req_qty) in requested.items():
-            p = products_map[pid]  # guaranteed present and sufficient stock
+            p = products_map[pid]
             unit_price = Decimal(str(p.price))
             items.append(
                 OrderItem(order=order, product=p, price=unit_price, quantity=req_qty)
@@ -233,7 +230,6 @@ def checkout(request):
             ]
         )
 
-        # Minimal user update
         full = (data.get("full_name") or "").strip().split()
         if full:
             request.user.first_name = full[0]
@@ -243,14 +239,12 @@ def checkout(request):
             setattr(request.user, "phone", phone)
         request.user.save(update_fields=["first_name", "last_name", "phone"])
 
-    # Clear cart after successful order creation
     cart.clear()
     return redirect("orders:order_details", order_id=order.id)
 
 
 @login_required(login_url="users:login")
 def order_success(request, order_id: int):
-    # Retained for compatibility if linked elsewhere
     order = get_object_or_404(Order, id=order_id, user=request.user)
     return render(
         request,
@@ -278,10 +272,8 @@ def order_details(request, order_id: int):
     else:
         order = get_object_or_404(base_qs, id=order_id, user=request.user)
 
-    # Items + products
     items = order.items.select_related("product").all()
 
-    # Build VM items
     vm_items = []
     subtotal = Decimal("0.00")
     for it in items:
@@ -317,8 +309,8 @@ def order_details(request, order_id: int):
         "total_price": order.total_price,
         "currency": order.currency,
         "status": order.get_status_display(),
-        "payment_method_code": order.payment_method,  # 'card' | 'wallet' | 'cod'
-        "status_code": order.status,  # 'pending' | 'paid' | ...
+        "payment_method_code": order.payment_method,
+        "status_code": order.status,
         "show_proceed_to_payment": (
             order.status == OrderStatus.PENDING
             and order.payment_method in {PaymentMethod.CARD, PaymentMethod.WALLET}
@@ -371,11 +363,9 @@ def cancel_order(request, order_id):
         )
 
         if order.status in [OrderStatus.PENDING, OrderStatus.PAID]:
-            # Restock products only if not already cancelled
             order.status = OrderStatus.CANCELLED
             order.save(update_fields=["status"])
 
-            # Return stock
             touched = []
             for item in order.items.all():
                 p = item.product
@@ -419,7 +409,6 @@ def manage_orders(request):
             )
             return redirect("orders:manage_orders")
 
-        # If cancelling, restock (mirrors cancel_order logic)
         if new_status == OrderStatus.CANCELLED and order.status in [
             OrderStatus.PENDING,
             OrderStatus.PAID,
@@ -453,7 +442,6 @@ def manage_orders(request):
     qs = Order.objects.select_related("user").order_by("-created_at")
 
     if q:
-        # search by order id or user fields
         numeric_id = None
         try:
             numeric_id = int(q.lstrip("#"))
@@ -474,14 +462,12 @@ def manage_orders(request):
     if payment:
         qs = qs.filter(payment_method=payment)
 
-    # --- Pagination ---
     per_page = 25
     paginator = Paginator(qs, per_page)
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
     page_orders = page_obj.object_list
 
-    # Group current page by user -> status
     grouped = {}  # user_id -> {'user': user, 'by_status': {status_code: [
     # orders...]}}
     for o in page_orders:

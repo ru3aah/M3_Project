@@ -107,12 +107,12 @@ class ProductAdminInlinePostTests(TestCase):
     def setUp(self):
         User = get_user_model()
         self.superuser = User.objects.create_superuser(
-            username="admin",  # shim just for the manager
+            username="admin",
             email="admin@example.com",
             password="pass",
         )
         self.client = Client()
-        self.client.force_login(self.superuser)  # avoid credential-based login
+        self.client.force_login(self.superuser)
 
         self.category = Category.objects.create(name="Hops", slug="hops")
         self.product = Product.objects.create(
@@ -137,7 +137,7 @@ class ProductDetailViewTechSpecsRenderTests(TestCase):
     def setUp(self):
         User = get_user_model()
         self.superuser = User.objects.create_superuser(
-            username="admin",  # <-- shim to satisfy manager
+            username="admin",
             email="admin@example.com",
             password="pass",
         )
@@ -156,7 +156,6 @@ class ProductDetailViewTechSpecsRenderTests(TestCase):
             available=True,
         )
 
-        # (1) simple string
         ProductTechSpec.objects.create(
             product=self.product,
             tech_spec={"name": "Country", "value": "USA"},
@@ -166,7 +165,6 @@ class ProductDetailViewTechSpecsRenderTests(TestCase):
             product=self.product,
             tech_spec={"name": "Colors", "value": ["Red", "Blue"]},
         )
-        # (3) list of {"name","value"} objects
         ProductTechSpec.objects.create(
             product=self.product,
             tech_spec={
@@ -184,7 +182,6 @@ class ProductDetailViewTechSpecsRenderTests(TestCase):
         self.assertEqual(resp.status_code, 200)
         tech_specs = resp.context["tech_specs"]
 
-        # turn list of dicts into an indexable map for easy asserts
         by_name = {row["name"]: row["value"] for row in tech_specs}
 
         self.assertIn("Country", by_name)
@@ -195,6 +192,3 @@ class ProductDetailViewTechSpecsRenderTests(TestCase):
 
         self.assertIn("Attributes", by_name)
         self.assertEqual(by_name["Attributes"], "Alpha: 12%, Beta: 4.5%")
-
-
-# Create your tests here.

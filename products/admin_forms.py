@@ -100,7 +100,6 @@ class ProductTechSpecJSONForm(forms.ModelForm):
             self.add_error("spec_name", "This field is required.")
 
         parsed = _parse_value(raw) if raw else ""
-        # Stash on instance; the formset will save it
         self.instance.tech_spec = {"name": name, "value": parsed}
         return cleaned
 
@@ -110,7 +109,6 @@ class ProductTechSpecJSONForm(forms.ModelForm):
         Still return an instance with tech_spec already populated.
         """
         inst = super().save(commit=False)
-        # self.instance.tech_spec has been set in clean()
         if commit:
             inst.save()
         return inst
@@ -129,7 +127,6 @@ class ProductTechSpecInlineFormSet(BaseInlineFormSet):
 
         parent = self.instance  # Product
 
-        # Handle deletions first (mirrors Django's typical pattern)
         for form in self.forms:
             if not form.is_valid():
                 continue
@@ -140,18 +137,16 @@ class ProductTechSpecInlineFormSet(BaseInlineFormSet):
                         obj.delete()
                     self.deleted_objects.append(obj)
 
-        # Create / update
         for form in self.forms:
             if not form.is_valid() or form.cleaned_data.get("DELETE"):
                 continue
 
             if not form.has_changed():
-                continue  # skip untouched extra rows
+                continue
 
             name = (form.cleaned_data.get("spec_name") or "").strip()
             raw_value = (form.cleaned_data.get("spec_value") or "").strip()
 
-            # Skip truly empty
             if not name and not raw_value:
                 continue
 
@@ -159,15 +154,12 @@ class ProductTechSpecInlineFormSet(BaseInlineFormSet):
 
             obj = form.cleaned_data.get("id")
             if obj and getattr(obj, "pk", None):
-                # update existing
                 obj.product = parent
                 obj.tech_spec = {"name": name, "value": parsed_value}
                 if commit:
                     obj.save()
-                # Provide a minimal change dict for admin messages
                 self.changed_objects.append((obj, {"tech_spec": ("(old)", "(new)")}))
             else:
-                # create new
                 obj = ProductTechSpec(
                     product=parent,
                     tech_spec={"name": name, "value": parsed_value},
@@ -176,5 +168,4 @@ class ProductTechSpecInlineFormSet(BaseInlineFormSet):
                     obj.save()
                 self.new_objects.append(obj)
 
-        # Return the list of all affected instances as Django does
         return self.new_objects + [obj for (obj, _changes) in self.changed_objects]
