@@ -1,18 +1,17 @@
 from django.contrib import admin
 
 from .models import Product, Category, ProductReview, ProductTechSpec
-from .admin_forms import ProductTechSpecJSONForm
+from .admin_forms import ProductTechSpecJSONForm, ProductTechSpecInlineFormSet
 
 
 class ProductTechSpecInline(admin.TabularInline):
     """
     Inline that exposes JSONField as two user-friendly inputs.
-    We keep the default Django InlineFormSet so the admin can track
-    new_objects/changed_objects/deleted_objects for messages & history.
     """
 
     model = ProductTechSpec
     form = ProductTechSpecJSONForm
+    formset = ProductTechSpecInlineFormSet
     fields = ("spec_name", "spec_value")
     extra = 1
     can_delete = True
@@ -20,10 +19,6 @@ class ProductTechSpecInline(admin.TabularInline):
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
-    """
-    Admin for Product with inline technical specifications.
-    """
-
     list_display = (
         "name",
         "slug",
