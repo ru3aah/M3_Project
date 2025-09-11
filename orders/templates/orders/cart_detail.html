@@ -1,0 +1,116 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% load cart_tags %}
+
+{% block title %}Cart | Hop & Barley{% endblock %}
+
+{% block content %}
+
+<!-- Main Content -->
+<main class="cart-page-wrapper">
+  <div class="cart-container">
+    <h1 class="cart-title">Shopping Cart</h1>
+
+      {% if cart|length == 0 %}
+          <div class="cart-items-list" id="no-items">
+              <div class="cart-item">
+                <img src="{% static 'img/empty_cart.svg' %}"
+                     alt="Empty cart pic"
+                     class = "cart-item__image">
+                  <div class="cart-item__body">
+                      <h2>Your cart is empty</h2>
+                      <a class="button button--primary"
+                         href="{% url 'products:product-list' %}">Start Shopping</a>
+                  </div>
+              </div>
+          </div>
+
+      {% endif %}
+
+      <div class="cart-items-list" id="cart-items-list">
+          {% for item in cart %}
+              {% with product=item.product data=item.data total=item.total_price %}
+                  <div class="cart-item">
+                      {% if product.image %}
+                          <img src="{{ product.image.url }}" alt="{{ product.name }}"
+                               class = "cart-item__image">
+                      {% else %}
+                          <img src="{% static 'img/no-image.png' %}"
+                               alt="no image" class = "cart-item__image">
+                      {% endif %}
+                      <div class="cart-item__body">
+                          <div class="cart-item__details">
+                              <h2 class="cart-item__title">
+                                  <a href="{% url 'products:product-detail' product.slug %}">
+                                      {{ product.name }}
+                                  </a>
+                              </h2>
+                              <div class="cart-item__price-info">
+                                  <p class="cart-item__price">{{ product.currency }} {{ product.price }}</p>
+                                  <span class="cart-item__price-tag">per {{ product.unit_measure }}</span>
+                              </div>
+                          </div>
+
+                          <div class="cart-item__actions">
+                                <form action="{% url 'orders:cart_add' product.id %}?next={{ request.path }}" method="post" class="quantity-counter-form">
+                                    {% csrf_token %}
+                                    <div class="cart-item__quantity-selector">
+                                        <button type="submit" class="quantity-btn" name="action" value="decrease" aria-label="Decrease quantity">
+                                            <i class="fa-solid fa-minus"></i>
+                                        </button>
+                                        {% cart_quantity cart product as qty %}
+                                        <input type="number" class="quantity-value-cart" name="manual_quantity" value="{{ qty }}" data-quantity-input aria-label="Product quantity">
+                                        <button type="submit" class="quantity-btn" name="action" value="increase" aria-label="Increase quantity">
+                                            <i class="fa-solid fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </form>
+
+                               <div class="cart-item__total">
+                                   <span class="line-total">Sub total: {{ product.currency }} {{ total }}</span>
+                               </div>
+
+                              <form action="{% url 'orders:cart_remove' product.id %}?next={{ request.path }}" method="post" class="quantity-counter-form">
+                                  {% csrf_token %}
+                                  <button type="submit" class="button--remove" data-action="remove">
+                                      Remove <i class="fa-solid fa-xmark"></i>
+                                  </button>
+                              </form>
+                          </div>
+                      </div>
+                  </div>
+              {% endwith %}
+          {% endfor %}
+      </div>
+
+      <div class="cart-summary {% if cart|length == 0 %} is-hidden{% endif %}">
+          <div class="cart-summary__total">
+              <span>Total: </span>
+              <span>{{ cart.get_total_price }} </span>
+
+              <span> for </span>
+              <span>{{ cart|length }}</span>
+              <span>Items</span>
+
+          </div>
+
+         <<div class="summary-actions">
+          {% if user.is_authenticated %}
+              <a class="button button--primary button--block" href="{% url 'orders:checkout' %}">Checkout</a>
+          {% else %}
+              <a class="button button--primary button--block" href="{% url 'users:login' %}?next={% url 'orders:checkout' %}">
+                  Checkout
+              </a>
+          {% endif %}
+          <form action="{% url 'orders:cart_clear' %}" method="post">
+              {% csrf_token %}
+              <button type="submit" class="button button--ghost button--block">Clear cart</button>
+          </form>
+</div>
+
+      </div>
+  </div>
+</main>
+
+{% endblock %}

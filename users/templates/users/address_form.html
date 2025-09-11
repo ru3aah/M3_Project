@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Add Shipping Address{% endblock %}
+
+{% block content %}
+<main class="checkout-page-wrapper">
+  <div class="checkout-container">
+    <h1 class="checkout-title">Add Shipping Address</h1>
+
+    <form method="post" action="">
+      {% csrf_token %}
+
+      <div class="checkout-section">
+        <div class="checkout-form-group">
+          <label for="{{ form.address_line_1.id_for_label }}">Address Line 1</label>
+          {{ form.address_line_1 }} {{ form.address_line_1.errors }}
+        </div>
+
+        <div class="checkout-form-group">
+          <label for="{{ form.address_line_2.id_for_label }}">Address Line 2</label>
+          {{ form.address_line_2 }} {{ form.address_line_2.errors }}
+        </div>
+
+        <div class="checkout-form-group">
+          <label for="{{ form.city.id_for_label }}">City</label>
+          {{ form.city }} {{ form.city.errors }}
+        </div>
+
+        <div class="checkout-form-group">
+          <label for="{{ form.country.id_for_label }}">Country</label>
+          {{ form.country }} {{ form.country.errors }}
+        </div>
+
+        <div class="checkout-form-group">
+          <label for="{{ form.postal_code.id_for_label }}">Postal Code</label>
+          {{ form.postal_code }} {{ form.postal_code.errors }}
+        </div>
+      </div>
+
+      <div class="checkout-section checkout-summary">
+        <div class="summary-details">
+          <a class="button" href="{{ request.GET.next|default:'/' }}">Cancel</a>
+          <button type="submit" class="button button--primary">Save address</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</main>
+{% endblock %}

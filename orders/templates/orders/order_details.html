@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Order #{{ order_number }} | Hop & Barley{% endblock %}
+
+{% block content %}
+<main class="checkout-page-wrapper">
+  <div class="checkout-container">
+    <h1 class="checkout-title">Order #{{ order_number }}</h1>
+
+    <!-- Order Overview (card with inline label/value rows) -->
+    <section class="checkout-section">
+      <h2 class="checkout-section__title">Order Overview</h2>
+
+      <div class="">
+        <div>Placed on: {{ created_at|date:"F j, Y, g:i a" }}</div>
+      </div>
+
+      <div class="summary-item__left">
+        <div>Status: {{ status }}</div>
+      </div>
+
+      <div class="summary-item__left">
+        <div>Payment method: {{ payment_method }}</div>
+      </div>
+    </section>
+
+    <!-- Items (card list using summary-item style) -->
+    <section class="checkout-section">
+      <h2 class="checkout-section__title">Items</h2>
+      <div class="summary-items">
+        {% for i in items %}
+          <div class="summary-item">
+            <div class="summary-item__left">
+              <p class="summary-item__name">{{ i.name }}</p>
+              <p class="summary-item__meta">
+                {{ currency }} {{ i.unit_price|floatformat:2 }}
+                × {{ i.quantity }}{% if i.measure_unit %} {{ i.measure_unit }}{% endif %}
+                = {{ currency }} {{ i.line_total|floatformat:2 }}
+              </p>
+            </div>
+          </div>
+        {% empty %}
+          <div class="summary-item">
+            <div class="summary-item__left">
+              <p class="summary-item__name">No items</p>
+              <p class="summary-item__meta">This order has no items.</p>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+      <div class="summary-details">
+        <div class="summary-total">
+          <p>Total</p>
+          <p>{{ currency }} {{ total_price|floatformat:2 }}</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Customer (card) -->
+    <section class="summary-total">
+      <h2 class="checkout-section__title">Customer</h2>
+      <div class="checkout-form-group">
+        <label>Name</label>
+        <div>{{ user_full_name|default:"—" }}</div>
+      </div>
+      <div class="checkout-form-group">
+        <label>Email</label>
+        <div>{{ user_email|default:"—" }}</div>
+      </div>
+      <div class="checkout-form-group">
+        <label>Phone</label>
+        <div>{{ user_phone|default:"—" }}</div>
+      </div>
+    </section>
+
+    <!-- Shipping Address (card) -->
+    <section class="checkout-section">
+      <h2 class="checkout-section__title">Shipping Address</h2>
+
+      <div class="summary-item__left">
+        <div>
+         {{ ship_address_line1 }}{% if ship_address_line2 %},
+             {{ ship_address_line2 }}{% endif %}
+        </div>
+      </div>
+
+      <div class="summary-item__left">
+        <div>{{ ship_postal_code }}, {{ ship_city }}, {{ ship_country }}</div>
+      </div>
+    </section>
+
+    <!-- Actions (card; buttons reuse existing .button styles) -->
+<section class="checkout-section">
+  <div class="summary-actions">
+    <a href="{% url 'products:product-list' %}" class="button button--secondary button--block">
+      Continue Shopping
+    </a>
+    <a href="{% url 'users:account' %}" class="button button--secondary button--block">
+      To User Account
+    </a>
+    {% if show_proceed_to_payment %}
+      <form method="post" action="{% url 'orders:pay_order' order_number %}">
+        {% csrf_token %}
+        <button type="submit" class="button button--primary button--block">
+          Proceed to Payment
+        </button>
+      </form>
+    {% endif %}
+  </div>
+</section>
+  </div>
+</main>
+{% endblock %}

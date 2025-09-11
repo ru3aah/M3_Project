@@ -1,7 +1,9 @@
 {% extends 'base.html' %}
+{% load cart_tags %}
 
 {% load static %}
 {% block title %}{{ product.name}} | Hop & Barley{% endblock %}
+
 
 {% block content %}
     <!-- Main Content -->
@@ -15,7 +17,7 @@
                          alt="{{ product.name }}"
                          class="product-image">
                 {% else %}
-                    <<img src="{% static 'img/products/default-product.jpg' %}"
+                    <img src="{% static 'img/products/default-product.jpg' %}"
                          alt="{{ product.name }}"
                          class="product-image">
                 {% endif %}
@@ -23,6 +25,28 @@
             <div class="product-info-column">
                 <div class="product-title-price">
                     <h1 class="product-name">{{ product.name }}</h1>
+                    <h3 class="product-brand">Type: {{ product.category }}</h3>
+                    {% if average_rating %}
+                        <div class="review-rating">
+                            {% for i in '12345' %}
+                                {% if forloop.counter <= average_rating %}
+                                    <i class="fa-solid fa-star"></i>
+                                {% else %}
+                                    <i class="fa-regular fa-star"></i>
+                                {% endif %}
+                            {% endfor %}
+                            <span style="margin-left: 8px; font-size: 16px; color: var(--black-main);">
+                                {{ average_rating|floatformat:1 }} out of 5 ({{ review_count }} review{{ review_count|pluralize }})
+                            </span>
+                        </div>
+                    {% else %}
+                        <div class="review-rating">
+                            {% for i in '12345' %}
+                                <i class="fa-regular fa-star"></i>
+                            {% endfor %}
+                            <span style="margin-left: 8px; font-size: 16px; color: var(--grey-text);">No reviews yet</span>
+                        </div>
+                    {% endif %}
                     <div class="price-section">
                         <span class="price-tag">per
                             {{ product.unit_measure }}</span>
@@ -33,38 +57,83 @@
                 <div class="product-description">
                     <p>{{ product.description|linebreaks }}</p>
                 </div>
-                <div class="cart-controls">
-                    <button class="button button--primary add-to-cart-button" id="add-to-cart-btn">
+
+            <!-- Cart Controls -->
+            <div class="cart-controls">
+                <!-- Add to Cart Form (visible when product is not in cart) -->
+                <form action="{% url 'orders:cart_add' product.id %}?next={{ request.path }}" method="post" class="add-to-cart-form">
+                    {% csrf_token %}
+                    <input type="hidden" name="quantity" value="1">
+                    <button type="submit"
+                            class="button button--primary add-to-cart-button{% if cart|in_cart:product %} is-hidden{% endif %}" id="add-to-cart-btn">
                         <i class="fa-solid fa-cart-shopping"></i>
                         <span>Add to Cart</span>
                     </button>
-                    <div class="quantity-counter is-hidden" id="quantity-counter">
-                        <button class="quantity-btn" data-action="decrease" aria-label="Decrease quantity"><i class="fa-solid fa-minus"></i></button>
-                        <span class="quantity-value">1 in cart</span>
-                        <button class="quantity-btn" data-action="increase" aria-label="Increase quantity"><i class="fa-solid fa-plus"></i></button>
-                    </div>
+                </form>
+
+                <!-- In Cart Label (shows when product is in cart) -->
+                <div class="in-cart-label{% if not cart|in_cart:product %} is-hidden{% endif %}" id="in-cart-label">
+                    <i class="fa-solid fa-check" ></i>
+                    <span>In Cart</span>
                 </div>
+
+
+                <!-- Quantity Counter Form (separate form) -->
+                <form action="{% url 'orders:cart_add' product.id %}?next={{ request.path }}" method="post" class="quantity-counter-form">
+                    {% csrf_token %}
+
+                    <div class="quantity-counter{% if not cart|in_cart:product %} is-hidden{% endif %}" id="quantity-counter">
+
+                        <!-- For decrease button -->
+                        <button type="submit" class="quantity-btn" name="action" value="decrease" aria-label="Decrease quantity">
+                            <i class="fa-solid fa-minus"></i>
+                        </button>
+                        
+                        {% cart_quantity cart product as qty %}
+                        <input type="number" 
+                               class="quantity-input" 
+                               name="manual_quantity" 
+                               value="{{ qty }}"
+                               data-quantity-input
+                               aria-label="Product quantity">
+                        
+                        <!-- For increase button -->
+                        <button type="submit" class="quantity-btn" name="action" value="increase" aria-label="Increase quantity">
+                            <i class="fa-solid fa-plus"></i>
+                        </button>
+
+                    </div>
+                </form>
+            </div>
             </div>
         </section>
 
         <!-- Technical Specifications Accordion -->
         <section class="accordion-section">
-            <div class="accordion-item">
-                <div class="accordion-title">
+            <div class="accordion-item" id="tech-specs-accordion">
+                <div class="accordion-title" data-accordion="tech-specs-accordion">
                     <h3>Technical Specifications</h3>
                     <i class="fa-solid fa-chevron-down accordion-icon"></i>
                 </div>
                 <div class="accordion-content">
-                    <ul>
-                        <li><strong>Origin:</strong> United Kingdom</li>
-                        <li><strong>Type:</strong> Base Malt</li>
-                        <li><strong>Color (°L):</strong> 2.5 - 4.0 °L</li>
-                        <li><strong>Moisture:</strong> 4.0% max</li>
-                        <li><strong>Protein:</strong> 9.5% - 10.5%</li>
-                        <li><strong>Diastatic Power:</strong> ≈ 120 °L</li>
-                        <li><strong>Usage:</strong> Up to 100% of the grist</li>
-                        <li><strong>Recommended Beer Styles:</strong> English Pale Ale, ESB, Bitter, Porter, Stout, Mild Ale</li>
-                    </ul>
+                    {% if tech_specs %}
+                        <ul class="tech-specs-list">
+                            {% for spec in tech_specs %}
+                                <li class="tech-spec-item">
+                                    <strong>{{ spec.name }}:</strong>
+                                    <span class="tech-spec-value">
+                                        {{ spec.value }}
+                                    </span>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <div class="no-tech-specs">
+                            <p><em>No technical specification is available
+                                for
+                                this product.</em></p>
+                        </div>
+                    {% endif %}
                 </div>
             </div>
         </section>
@@ -89,17 +158,35 @@
                             <p class="review-text">{{ review.comment }}</p>
                         </div>
                         <div class="review-author">
-                            <img src="{{review.user.image.url}}" alt="User
-                            avatar"
-                                 class="author-avatar">
+                            {% if review.user.image %}
+                                <img src="{{ review.user.image.url }}"
+                                     alt="User avatar" class="author-avatar">
+                            {% else %}
+                                <div class="author-avatar-placeholder">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                            {% endif %}
                             <span class="author-name">
-                                {{ review.user.username }} @
-                                {{ review.updated_at }}</span>
+                                {{ review.user.username }} - 
+                                {{ review.updated_at|date:"M d, Y" }}
+                            </span>
                         </div>
                     </div>
                 {% empty %}
-                    <p> No reviews yet</p>
+                    <p>No reviews yet. Be the first to leave a review!</p>
                 {% endfor %}
+            </div>
+            <div class="reviews-cta" style="margin: 1rem 0;">
+                {% if user.is_authenticated %}
+                    <a class="button button--primary"
+                       href="{% url 'products:review-create' product.slug %}">
+                        Write a review</a>
+                {% else %}
+                    <a class="button button--primary"
+                       href="{% url 'users:login' %}?next={{ request.path|urlencode }}">
+                        Sign in to write a review
+                    </a>
+                {% endif %}
             </div>
         </section>
     </div>

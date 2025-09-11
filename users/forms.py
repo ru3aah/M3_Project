@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 
-from users.models import User
+from users.models import User, ShippingAddress
 
 
 class UserRegistrationForm(UserCreationForm):
@@ -89,3 +89,30 @@ class UserLoginForm(AuthenticationForm):
             }
         )
     )
+
+
+class ShippingAddressForm(forms.ModelForm):
+    class Meta:
+        model = ShippingAddress
+        fields = [
+            "address_line_1",
+            "address_line_2",
+            "city",
+            "country",
+            "postal_code",
+        ]
+        widgets = {
+            "address_line_1": forms.TextInput(
+                attrs={"class": "Input", "placeholder": "Street, house, apt"}
+            ),
+            "address_line_2": forms.TextInput(
+                attrs={"class": "Input", "placeholder": "Apartment, suite (optional)"}
+            ),
+            "city": forms.TextInput(attrs={"class": "Input", "placeholder": "City"}),
+            "country": forms.TextInput(
+                attrs={"class": "Input", "placeholder": "Country"}
+            ),
+            "postal_code": forms.TextInput(
+                attrs={"class": "Input", "placeholder": "ZIP / Postal code"}
+            ),
+        }

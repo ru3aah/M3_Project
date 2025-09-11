@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+{% load static %}
+{% load cart_tags %}
+
+{% block title %}Checkout | Hop & Barley{% endblock %}
+
+{% block content %}
+<!-- Main Content -->
+<main class="checkout-page-wrapper">
+    <div class="checkout-container">
+        <h1 class="checkout-title">Order Details</h1>
+
+        <form method="post" action="{% url 'orders:checkout' %}">
+            {% csrf_token %}
+
+        {% if form.non_field_errors %}
+        <div class="error-text" style="margin-bottom:1rem;">
+          {% for e in form.non_field_errors %}{{ e }}{% if not forloop.last %}<br>{% endif %}{% endfor %}
+        </div>
+        {% endif %}
+
+            <!-- Shipping Information -->
+            <section class="checkout-section">
+                <h2 class="checkout-section__title">Shipping Information</h2>
+
+                <div class="checkout-form-group">
+                    <label for="full-name">Full Name</label>
+                    {{ form.full_name }}
+                    {{ form.full_name.errors }}
+                </div>
+
+                <div class="checkout-form-group">
+                    <label for="phone">Phone Number</label>
+                    {{ form.phone }}
+                    {{ form.phone.errors }}
+                </div>
+
+                <div class="checkout-form-group">
+                    <label for="address">Shipping Address</label>
+                    {{ form.shipping_address }}
+                    {{ form.shipping_address.errors }}
+                    {% if form.shipping_address.field.widget.attrs.disabled %}
+                        <small class="hint">No any address available. Add one in your profile.</small>
+                    {% else %}
+                        <small class="hint">Select one of your saved addresses.</small>
+                    {% endif %}
+                </div>
+                <small class="hint">
+                {% if user.is_authenticated %}
+                    <a href="{% url 'users:address_add' %}?next={{ request.path|urlencode }}">
+                        + Add new address
+                    </a>
+                {% endif %}
+            </small>
+            </section>
+
+            <!-- Payment Method -->
+            <section class="checkout-section">
+                <h2 class="checkout-section__title">Payment Method</h2>
+
+                {% with pm=request.POST.payment_method|default:'debit' %}
+
+                <div class="payment-options">
+                    <label class="radio-option">
+                        <input type="radio" name="payment_method" value="debit" checked>
+                        <span class="radio-custom"></span>
+                        <span class="radio-label">Debit Card</span>
+                    </label>
+                    <label class="radio-option">
+                        <input type="radio" name="payment_method" value="wallet">
+                        <span class="radio-custom"></span>
+                        <span class="radio-label">Digital Wallet</span>
+                    </label>
+                    <label class="radio-option">
+                        <input type="radio" name="payment_method" value="cod">
+                        <span class="radio-custom"></span>
+                        <span class="radio-label">Cash On Delivery</span>
+                    </label>
+                </div>
+            {% endwith %}
+            </section>
+
+            <!-- Order Summary -->
+            <section class="checkout-summary">
+                <h2 class="checkout-section__title">Order Summary</h2>
+
+                <!-- Cart items list -->
+                <div class="summary-items">
+                    {% for item in cart %}
+                        {% cart_quantity cart item.product as qty %}
+                        <div class="summary-item">
+                            <div class="summary-item__left">
+                                <p class="summary-item__name">
+                                    {{ item.product.name }}
+                                </p>
+                                <p class="summary-item__meta">
+                                    {{ item.product.currency }}
+                                    {{ item.product.price|floatformat:2 }} ×
+                                    {{ qty }} =
+                                    {{ item.product.currency }}
+                                    {{ item.total_price|floatformat:2 }}
+                                </p>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <div class="summary-details">
+                    <div class="summary-total">
+                        <p>Total</p>
+                        <p>{{ cart.get_total_price|floatformat:2 }}</p>
+                    </div>
+                    <button type="submit" class="button button--primary button--pay">Place Order</button>
+                </div>
+            </section>
+        </form>
+    </div>
+</main>
+{% endblock %}

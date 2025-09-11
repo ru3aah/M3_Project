@@ -1,8 +1,15 @@
 from django.contrib import admin
 
-from .models import Product, Category, ProductReview
+from .models import Product, Category, ProductReview, ProductTechSpec
 
 
+class ProductTechSpecInline(admin.TabularInline):
+    model = ProductTechSpec
+    extra = 1
+    fields = ("tech_spec",)
+
+
+@admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
     """
     The ProductAdmin class is used to define the administrative interface
@@ -26,9 +33,9 @@ class ProductAdmin(admin.ModelAdmin):
     """
 
     list_display = (
-        "category",
         "name",
         "slug",
+        "category",
         "image",
         "price",
         "currency",
@@ -36,12 +43,20 @@ class ProductAdmin(admin.ModelAdmin):
         "stock",
         "description",
         "available",
+        "tech_specs_count",
     )
     prepopulated_fields = {"slug": ("name",)}
     search_fields = ("name",)
     list_filter = ("available",)
+    inlines = [ProductTechSpecInline]
+
+    def tech_specs_count(self, obj):
+        return obj.tech_specs.count()
+
+    tech_specs_count.short_description = "Tech Specs"
 
 
+@admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
     """
     Represents the administrative interface for managing Category objects.
@@ -74,6 +89,29 @@ class CategoryAdmin(admin.ModelAdmin):
     list_filter = ("parent",)
 
 
-admin.site.register(Product, ProductAdmin)
-admin.site.register(Category, CategoryAdmin)
-admin.site.register(ProductReview)
+@admin.register(ProductReview)
+class ProductReviewAdmin(admin.ModelAdmin):
+    list_display = (
+        "product",
+        "user",
+        "title",
+        "comment",
+        "rating",
+        "created_at",
+        "updated_at",
+    )
+    list_display_links = ("product", "user")
+    list_filter = ("product", "user")
+    search_fields = ("product", "user", "title", "comment", "rating")
+    ordering = ("-created_at",)
+    date_hierarchy = "created_at"
+    readonly_fields = ("created_at", "updated_at")
+    list_per_page = 25
+
+
+@admin.register(ProductTechSpec)
+class ProductTechSpecAdmin(admin.ModelAdmin):
+    list_display = (
+        "product",
+        "tech_spec",
+    )
