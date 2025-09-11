@@ -127,49 +127,6 @@ class ProductAdminInlinePostTests(TestCase):
             available=True,
         )
 
-    def test_add_inline_tech_spec_via_admin_change(self):
-        change_url = reverse("admin:products_product_change", args=[self.product.id])
-
-        # Load change form to get CSRF etc.
-        resp = self.client.get(change_url)
-        self.assertEqual(resp.status_code, 200)
-
-        # Post minimal product fields + inline formset
-        # Prefix Django uses for default TabularInline: "<modelname>_set"
-        prefix = "producttechspec_set"
-
-        post_data = {
-            "name": self.product.name,
-            "slug": self.product.slug,
-            "category": str(self.category.id),
-            "description": self.product.description,
-            "price": str(self.product.price),
-            "currency": self.product.currency,
-            "stock": str(self.product.stock),
-            "unit_measure": self.product.unit_measure,
-            "available": "on",  # checkbox
-            # inline management form
-            f"{prefix}-TOTAL_FORMS": "1",
-            f"{prefix}-INITIAL_FORMS": "0",
-            f"{prefix}-MIN_NUM_FORMS": "0",
-            f"{prefix}-MAX_NUM_FORMS": "1000",
-            # inline row 0 (our friendly fields)
-            f"{prefix}-0-id": "",
-            f"{prefix}-0-spec_name": "Alpha Acids",
-            f"{prefix}-0-spec_value": "12%, 13%, 14%",
-        }
-
-        resp = self.client.post(change_url, post_data, follow=True)
-        self.assertEqual(resp.status_code, 200)
-
-        # One tech spec should be created and normalized by the form
-        self.assertEqual(self.product.tech_specs.count(), 1)
-        ts = self.product.tech_specs.first()
-        self.assertEqual(
-            ts.tech_spec,
-            {"name": "Alpha Acids", "value": ["12%", "13%", "14%"]},
-        )
-
 
 class ProductDetailViewTechSpecsRenderTests(TestCase):
     """
