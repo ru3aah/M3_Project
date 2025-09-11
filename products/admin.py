@@ -1,12 +1,15 @@
 from django.contrib import admin
 
 from .models import Product, Category, ProductReview, ProductTechSpec
+from .admin_forms import ProductTechSpecJSONForm
 
 
 class ProductTechSpecInline(admin.TabularInline):
     model = ProductTechSpec
+    form = ProductTechSpecJSONForm
     extra = 1
-    fields = ("tech_spec",)
+    # expose only the friendly virtual fields from the form
+    fields = ("spec_name", "spec_value")
 
 
 @admin.register(Product)
